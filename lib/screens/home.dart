@@ -1,16 +1,32 @@
 import 'package:flutter/material.dart';
-import 'auth/login.dart';
+import 'package:seed/screens/auth/login.dart';
+import 'package:seed/screens/reports.dart';
 import 'dashboard.dart'; // Import the Dashboard screen
+import 'profile.dart'; // Import the Profile screen
+import 'support.dart'; // Import the Support screen
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool isLoggedIn = false; // Simulating login state
+
+  void toggleLoginState() {
+    setState(() {
+      isLoggedIn = !isLoggedIn;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Home'),
-        backgroundColor: Colors.green, // Change color as needed
+        backgroundColor: Colors.green,
       ),
-      drawer: Drawer( // Sidebar menu
+      drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
@@ -32,20 +48,62 @@ class HomeScreen extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: Icon(Icons.login),
-              title: Text('Login'),
+              leading: Icon(Icons.account_circle),
+              title: Text('Profile'),
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginScreen()),
-                );
+                if (isLoggedIn) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ProfileScreen()),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Please log in first.')),
+                  );
+                }
               },
             ),
             ListTile(
-              leading: Icon(Icons.logout),
-              title: Text('Logout'),
+              leading: Icon(Icons.report),
+              title: Text('Report'),
               onTap: () {
-                // Add logout functionality
+                if (isLoggedIn) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ReportScreen()),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Please log in first.')),
+                  );
+                }
+              },
+            ),
+            ListTile(
+              leading: Icon(isLoggedIn ? Icons.logout : Icons.login),
+              title: Text(isLoggedIn ? 'Logout' : 'Login'),
+              onTap: () {
+                if (isLoggedIn) {
+                  toggleLoginState(); // Logout
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Logged out successfully.')),
+                  );
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                  );
+                }
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.support),
+              title: Text('Customer Support'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SupportScreen()),
+                );
               },
             ),
           ],
@@ -69,18 +127,14 @@ class HomeScreen extends StatelessWidget {
               },
               child: Text('Go to Dashboard'),
             ),
-            SizedBox(height: 10), // Space between buttons
+            SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginScreen()),
-                );
+                setState(() {
+                  isLoggedIn = !isLoggedIn; // Toggle login state
+                });
               },
-              child: Text('Login'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue, // Custom button color
-              ),
+              child: Text(isLoggedIn ? 'Logout' : 'Login'),
             ),
           ],
         ),

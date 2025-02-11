@@ -7,14 +7,14 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home'),
+        title: Text('Home'),
         backgroundColor: Colors.green, // Change color as needed
       ),
       drawer: Drawer( // Sidebar menu
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(
+            DrawerHeader(
               decoration: BoxDecoration(color: Colors.green),
               child: Text(
                 'Menu',

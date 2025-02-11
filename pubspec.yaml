@@ -35,3 +35,9 @@ flutter:
 
   assets:
      - assets/images/google_logo.png
+     - assets/images/seed.jpg
+     - assets/weather/clear.jpg
+     - assets/weather/rain.jpg
+     - assets/weather/cloudy.jpg
+     - assets/images/chatbot1.png
+     - assets/images/chat.png

@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 
-class HomeScreen extends StatefulWidget {
+class WeatherOutlookScreen extends StatefulWidget {
+  const WeatherOutlookScreen({super.key});
+
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  _WeatherOutlookScreenState createState() => _WeatherOutlookScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _WeatherOutlookScreenState extends State<WeatherOutlookScreen> {
   final String apiKey = "ede05a6991004763b9074142252101";
 
   final List<String> cities = [

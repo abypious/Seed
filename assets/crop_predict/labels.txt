@@ -1,0 +1,30 @@
+0 Banana
+1 Brinjal
+2 Cabbage
+3 Carrot
+4 Cauliflower
+5 Chilli
+6 Colocasia
+7 Cotton
+8 Cucumber
+9 Elephant Foot Yam
+10 Garlic
+11 Ginger
+12 KidneyBeans
+13 Lentil
+14 MungBeans
+15 Muskmelon
+16 Mustard Greens
+17 Okra or Lady Finger
+18 Peanut
+19 Pumkin
+20 Soybean
+21 Spinach
+22 Sugarcane
+23 Sunflower
+24 Sweet Potato
+25 Tapioca
+26 Tomato
+27 Watermelon
+28 maize
+29 rice

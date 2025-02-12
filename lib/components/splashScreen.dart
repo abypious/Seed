@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../screens/functions/weather_outlook_screen.dart';
+import 'package:seed/screens/home.dart';
 
 
 class SplashScreen extends StatefulWidget {
@@ -15,7 +15,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Timer(const Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()), // Replace with your home screen
+        MaterialPageRoute(builder: (context) => HomeScreen()),
       );
     });
   }

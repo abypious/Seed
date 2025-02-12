@@ -13,28 +13,58 @@ class AIAssistantScreen extends StatefulWidget {
 
 class _AIAssistantScreenState extends State<AIAssistantScreen> {
   final TextEditingController _controller = TextEditingController();
-  final List<Map<String, String>> _messages = [];
-  bool _isTyping = false;
+  final List<Map<String, String>> _messages = [
+    {"bot": "Hey! I'm SEED, your personal assistant. How can I help you today?"}
+  ];
 
-  final String geminiAPIKey = "AIzaSyCdIb66lRkSPFYuUkQwPtjB2ZQrtw-A68o"; // Replace with your Gemini API key
+  bool _selectionComplete = false;
+
+  String? selectedDistrict;
+  String? selectedObservatory;
+  String? selectedLandArea;
+
+  final String geminiAPIKey = "AIzaSyCdIb66lRkSPFYuUkQwPtjB2ZQrtw-A68o";
+
+  final Map<String, List<String>> _observatoriesByDistrict = {
+    'Thiruvananthapuram': ['Neyyattinkara', 'Thiruvananthapur AP (OBSY)', 'Thiruvananthapur (OBSY)', 'Varkala'],
+    'Kollam': ['Aryankavu', 'Kollam (RLY)', 'Punalur (OBSY)'],
+    'Pathanamthitta': ['Konni', 'Kurudamannil'],
+    'Alappuzha': ['Alappuzha', 'Cherthala', 'Haripad', 'Kayamkulam (Agro)', 'Kayamkulam (RARS)', 'Mancompu', 'Mavelikara'],
+    'Kottayam': ['Kanjirappally', 'Kottayam (RRII) (OBSY)', 'Kozha', 'Kumarakom', 'Vaikom'],
+    'Idukki': ['Idukki', 'Munnar (KSEB)', 'Myladumpara Agri', 'Peermade(TO)', 'Thodupuzha'],
+    'Ernakulam': ['Alwaye PWD', 'CIAL Kochi (OBSY)', 'Ernakulam', 'NAS Kochi (OBSY)', 'Perumpavur', 'Piravam'],
+    'Thrissur': ['Chalakudi', 'Enamakal', 'Irinjalakuda', 'Kodungallur', 'Kunnamkulam', 'Vadakkancherry', 'Vellanikkarai (OBSY)'],
+    'Palakkad': ['Alathur (Hydro)', 'Chittur', 'Kollengode', 'Mannarkad', 'Ottapalam', 'Palakkad (OBSY)', 'Parambikulam', 'Pattambi (Agro)', 'Trithala'],
+    'Malappuram': ['Angadipuram', 'Karipur AP (OBSY)', 'Manjeri', 'Nilambur', 'Perinthalamanna', 'Ponnani'],
+    'Kozhikode': ['Kozhikode (OBSY)', 'Quilandi', 'Vadakara'],
+    'Wayanad': ['Ambalavayal', 'Kuppadi', 'Mananthavady', 'Vythiri'],
+    'Kannur': ['Irikkur', 'Kannur (OBSY)', 'Mahe', 'Taliparamba', 'Thalasserry'],
+    'Kasargod': ['Hosdurg', 'Kudulu'],
+  };
+
+  final List<String> _landAreas = [
+    "Less than 1 acre",
+    "1 - 3 acres",
+    "More than 3 acres"
+  ];
 
   Future<void> _sendMessage() async {
-    if (_controller.text.isNotEmpty) {
-      String userMessage = _controller.text.trim();
+    if (!_selectionComplete) return;
 
+    String userMessage = _controller.text.trim();
+    if (userMessage.isNotEmpty) {
       setState(() {
         _messages.insert(0, {"user": userMessage});
-        _isTyping = true;
       });
 
       _controller.clear();
       HapticFeedback.lightImpact();
 
       String botResponse = await _fetchGeminiResponse(userMessage);
-      botResponse = _cleanResponse(botResponse); // Remove formatting
+      botResponse = _cleanResponse(botResponse);
+
       setState(() {
         _messages.insert(0, {"bot": botResponse});
-        _isTyping = false;
       });
     }
   }
@@ -44,15 +74,15 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
 
     final response = await http.post(
       Uri.parse("$apiUrl?key=$geminiAPIKey"),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         "contents": [
           {
             "role": "user",
             "parts": [
-              {"text": prompt}
+              {
+                "text": "District: $selectedDistrict, Observatory: $selectedObservatory, Land Area: $selectedLandArea\n\n$prompt"
+              }
             ]
           }
         ]
@@ -67,13 +97,8 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
     }
   }
 
-  /// Removes markdown formatting (*, _, -) from text
   String _cleanResponse(String response) {
-    return response
-        .replaceAll("*", "") // Remove bold/italic formatting
-        .replaceAll("_", "") // Remove underscores
-        .replaceAll("`", "") // Remove inline code formatting
-        .replaceAll("\n\n", "\n"); // Reduce extra new lines
+    return response.replaceAll("*", "").replaceAll("_", "").replaceAll("`", "").replaceAll("\n\n", "\n");
   }
 
   @override
@@ -106,10 +131,11 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
         children: [
           Positioned.fill(
             child: Image.asset(
-              'assets/images/chat.png',
+              'assets/images/chat.png', // Background Image
               fit: BoxFit.cover,
             ),
           ),
+
           Column(
             children: [
               Expanded(
@@ -123,10 +149,10 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
                       child: Row(
-                        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start, // User on right, bot on left
+                        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (!isUser) // Bot's avatar (stick to the left)
+                          if (!isUser)
                             const CircleAvatar(
                               radius: 18,
                               backgroundImage: AssetImage('assets/images/chatbot1.png'),
@@ -137,15 +163,8 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
                                 color: isUser ? Colors.blueAccent : Colors.grey[300],
-                                borderRadius: BorderRadius.only(
-                                  topLeft: const Radius.circular(15),
-                                  topRight: const Radius.circular(15),
-                                  bottomLeft: isUser ? const Radius.circular(15) : const Radius.circular(0),
-                                  bottomRight: isUser ? const Radius.circular(0) : const Radius.circular(15),
-                                ),
-                                boxShadow: const [
-                                  BoxShadow(color: Colors.black12, blurRadius: 4, spreadRadius: 2),
-                                ],
+                                borderRadius: BorderRadius.circular(15),
+                                boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, spreadRadius: 2)],
                               ),
                               child: Text(
                                 message.values.first,
@@ -160,51 +179,113 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                 ),
               ),
 
-              if (_isTyping)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 5),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
+              if (!_selectionComplete)
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Column(
                     children: [
-                      SizedBox(width: 20),
-                      CircleAvatar(
-                        radius: 12,
-                        backgroundImage: AssetImage('assets/images/chatbot1.png'),
+                      DropdownButtonFormField<String>(
+                        value: selectedDistrict,
+                        hint: const Text("Select District"),
+                        items: _observatoriesByDistrict.keys.map((String district) {
+                          return DropdownMenuItem<String>(
+                            value: district,
+                            child: Text(district),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedDistrict = value;
+                            selectedObservatory = null;
+                            selectedLandArea = null;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
                       ),
-                      SizedBox(width: 8),
-                      Text("typing...", style: TextStyle(color: Colors.black54, fontSize: 14)),
+                      const SizedBox(height: 10),
+
+                      if (selectedDistrict != null)
+                        DropdownButtonFormField<String>(
+                          value: selectedObservatory,
+                          hint: const Text("Select Observatory"),
+                          items: _observatoriesByDistrict[selectedDistrict]!.map((String observatory) {
+                            return DropdownMenuItem<String>(
+                              value: observatory,
+                              child: Text(observatory),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedObservatory = value;
+                              selectedLandArea = null;
+                            });
+                          },
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      const SizedBox(height: 10),
+
+                      if (selectedObservatory != null)
+                        DropdownButtonFormField<String>(
+                          value: selectedLandArea,
+                          hint: const Text("Select Land Area"),
+                          items: _landAreas.map((String landArea) {
+                            return DropdownMenuItem<String>(
+                              value: landArea,
+                              child: Text(landArea),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedLandArea = value;
+                            });
+                          },
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      const SizedBox(height: 10),
+
+                      if (selectedLandArea != null)
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _messages.insert(0, {"bot": "Thank you! Now you can ask me anything."});
+                              _selectionComplete = true;
+                            });
+                          },
+                          child: const Text("Confirm Selection"),
+                        ),
                     ],
                   ),
                 ),
 
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _controller,
-                        decoration: InputDecoration(
-                          hintText: "Type your message...",
-                          filled: true,
-                          fillColor: Colors.white.withOpacity(0.9),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(25),
-                            borderSide: BorderSide.none,
+              if (_selectionComplete)
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _controller,
+                          decoration: InputDecoration(
+                            hintText: "Type your message...",
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    FloatingActionButton(
-                      onPressed: _sendMessage,
-                      backgroundColor: Colors.green,
-                      child: const Icon(Icons.send, color: Colors.white),
-                    ),
-                  ],
+                      const SizedBox(width: 5),
+                      FloatingActionButton(
+                        onPressed: _sendMessage,
+                        backgroundColor: Colors.green,
+                        child: const Icon(Icons.send, color: Colors.white),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
         ],

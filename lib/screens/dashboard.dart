@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:seed/screens/profile.dart';
 import 'functions/ai_assistant_screen.dart';
+import 'functions/crop_advisor_screen.dart';
 import 'functions/fertilizer.dart';
 import 'functions/irrigation_planner_screen.dart';
 import 'functions/weather_outlook_screen.dart';
@@ -23,10 +24,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   final List<Widget> _screens = [
-    WeatherOutlookScreen(),
+    const WeatherOutlookScreen(),
+    CropAdvisorScreen(),
     const IrrigationScreen(),
     const FertilizerRecommendationScreen(),
-    const UserProfileScreen(),
+
   ];
 
   @override
@@ -119,11 +121,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 0:
         return "Home";
       case 1:
-        return "Irrigation";
+        return "Crop Advisor";
       case 2:
-        return "Fertilizer Recommendation";
+        return "Irrigation";
       case 3:
-        return "User Profile";
+        return "Fertilizer Recommendation";
       default:
         return "Dashboard";
     }
@@ -135,11 +137,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 0:
         return Icons.home;
       case 1:
-        return Icons.water_drop;
-      case 2:
         return Icons.agriculture;
+      case 2:
+        return Icons.water_drop;
       case 3:
-        return Icons.person;
+        return Icons.science;
       default:
         return Icons.home;
     }
@@ -151,11 +153,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 0:
         return "Home";
       case 1:
-        return "Irrigation";
+        return "Crop";
       case 2:
-        return "Manures";
+        return "Irrigation";
       case 3:
-        return "Profile";
+        return "Fertilizer";
       default:
         return "";
     }

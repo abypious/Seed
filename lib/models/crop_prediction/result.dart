@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'input_screen.dart';
+
 class ResultScreen extends StatelessWidget {
   final String predictionResult;
 
@@ -9,7 +9,7 @@ class ResultScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Prediction Results',
           style: TextStyle(
             color: Colors.black,
@@ -21,20 +21,20 @@ class ResultScreen extends StatelessWidget {
         centerTitle: true,
       ),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xFFFBF8E3), Color(0xFFD9FFD2)], // Soft gradient background
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
         ),
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Title text
-            Text(
+            const Text(
               'Here are the top predicted crops for your land:',
               style: TextStyle(
                 fontSize: 24,
@@ -43,7 +43,7 @@ class ResultScreen extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
 
             // Result Container
             Container(
@@ -51,17 +51,17 @@ class ResultScreen extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
-                  BoxShadow(
+                  const BoxShadow(
                     color: Colors.black26,
                     blurRadius: 8,
                     spreadRadius: 2,
                   ),
                 ],
               ),
-              padding: EdgeInsets.all(20),
+              padding: const EdgeInsets.all(20),
               child: Text(
                 predictionResult,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
@@ -70,7 +70,7 @@ class ResultScreen extends StatelessWidget {
               ),
             ),
 
-            SizedBox(height: 40),
+            const SizedBox(height: 40),
 
             // Button to go back to the previous screen
             ElevatedButton(
@@ -79,10 +79,10 @@ class ResultScreen extends StatelessWidget {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.amber,
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 32),
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 32),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
-              child: Text(
+              child: const Text(
                 'Go Back',
                 style: TextStyle(color: Colors.black, fontSize: 18),
               ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:seed/screens/profile.dart';
+import 'package:seed/models/crop_prediction/input_screen.dart';
 import 'functions/ai_assistant_screen.dart';
-import 'functions/crop_advisor_screen.dart';
 import 'functions/fertilizer.dart';
 import 'functions/irrigation_planner_screen.dart';
 import 'functions/weather_outlook_screen.dart';
@@ -25,7 +24,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   final List<Widget> _screens = [
     const WeatherOutlookScreen(),
-    CropAdvisorScreen(),
+    InputScreen(),
     const IrrigationScreen(),
     const FertilizerRecommendationScreen(),
 

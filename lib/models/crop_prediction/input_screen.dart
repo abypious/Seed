@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'tflite_model.dart';
-import 'result.dart';  // Import ResultScreen
+import 'result.dart';
 
 class InputScreen extends StatefulWidget {
   @override
@@ -72,7 +72,7 @@ class _InputScreenState extends State<InputScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text(
+        title: const Text(
           'Enter Parameters',
           style: TextStyle(color: Colors.black, fontSize: 22, fontWeight: FontWeight.bold),
         ),
@@ -80,18 +80,18 @@ class _InputScreenState extends State<InputScreen> {
       ),
       body: SingleChildScrollView(  // Wrap the body in SingleChildScrollView
         child: Container(
-          color: Color(0xFFD9FFD2), // Light pink background
-          padding: EdgeInsets.all(16.0),
+          color: const Color(0xFFD9FFD2), // Light pink background
+          padding: const EdgeInsets.all(16.0),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Enter the required parameters to predict the best crop for your land.',
                   style: TextStyle(fontSize: 16, color: Colors.black87),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 _buildTextField(nController, 'Nitrogen'),
                 _buildTextField(pController, 'Phosphorus'),
                 _buildTextField(kController, 'Potassium'),
@@ -99,16 +99,16 @@ class _InputScreenState extends State<InputScreen> {
                 _buildTextField(phController, 'pH Level'),
                 _buildTextField(humidityController, 'Humidity (%)'),
                 _buildTextField(rainfallController, 'Rainfall (mm)'),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Center(
                   child: ElevatedButton(
                     onPressed: _predictCrop,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.amber,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 32),
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 32),
                     ),
-                    child: Text('Predict', style: TextStyle(color: Colors.black, fontSize: 18)),
+                    child: const Text('Predict', style: TextStyle(color: Colors.black, fontSize: 18)),
                   ),
                 ),
               ],
@@ -127,7 +127,7 @@ class _InputScreenState extends State<InputScreen> {
         keyboardType: TextInputType.number,
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(fontSize: 14, color: Colors.grey),
+          labelStyle: const TextStyle(fontSize: 14, color: Colors.grey),
           filled: true,
           fillColor: Colors.white,
           border: OutlineInputBorder(

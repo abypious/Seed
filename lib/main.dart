@@ -1,6 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:seed/models/crop_prediction/tflite_model.dart';
 import 'screens/home.dart';
 
 void main() async{
@@ -17,7 +19,12 @@ void main() async{
   }else {
         await Firebase.initializeApp();
   }
-  runApp(MyApp());
+  runApp(
+    ChangeNotifierProvider<TFLiteModel>(
+      create: (context) => TFLiteModel(),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

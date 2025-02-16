@@ -30,7 +30,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
     'Kollam': ['Aryankavu', 'Kollam (RLY)', 'Punalur (OBSY)'],
     'Pathanamthitta': ['Konni', 'Kurudamannil'],
     'Alappuzha': ['Alappuzha', 'Cherthala', 'Haripad', 'Kayamkulam (Agro)', 'Kayamkulam (RARS)', 'Mancompu', 'Mavelikara'],
-    'Kottayam': ['Kanjirappally', 'Kottayam (RRII) (OBSY)', 'Kozha', 'Kumarakom', 'Vaikom'],
+    'Kottayam': ['Kanjirappally', 'Kottayam (RRII) (OBSY  )', 'Kozha', 'Kumarakom', 'Vaikom'],
     'Idukki': ['Idukki', 'Munnar (KSEB)', 'Myladumpara Agri', 'Peermade(TO)', 'Thodupuzha'],
     'Ernakulam': ['Alwaye PWD', 'CIAL Kochi (OBSY)', 'Ernakulam', 'NAS Kochi (OBSY)', 'Perumpavur', 'Piravam'],
     'Thrissur': ['Chalakudi', 'Enamakal', 'Irinjalakuda', 'Kodungallur', 'Kunnamkulam', 'Vadakkancherry', 'Vellanikkarai (OBSY)'],
@@ -68,7 +68,6 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
       });
     }
   }
-
   Future<String> _fetchGeminiResponse(String prompt) async {
     const String apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
 
@@ -81,7 +80,18 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
             "role": "user",
             "parts": [
               {
-                "text": "District: $selectedDistrict, Observatory: $selectedObservatory, Land Area: $selectedLandArea\n\n$prompt"
+                "text": """
+              Context: The user is interacting with an AI assistant named SEED.
+              The AI should prioritize answering agricultural questions but also respond to general queries.
+              Limit response length to 4-5 sentences.
+
+              Selected Inputs:
+              - District: ${selectedDistrict ?? "Not provided"}
+              - Observatory: ${selectedObservatory ?? "Not provided"}
+              - Land Area: ${selectedLandArea ?? "Not provided"}
+
+              User Query: $prompt
+              """
               }
             ]
           }
@@ -91,11 +101,16 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = jsonDecode(response.body);
-      return data["candidates"][0]["content"]["parts"][0]["text"].trim();
+      String aiResponse = data["candidates"][0]["content"]["parts"][0]["text"].trim();
+
+      // Limit response to 3-4 sentences max
+      List<String> sentences = aiResponse.split('. ');
+      return sentences.take(3).join('. ') + '.';
     } else {
       return "Sorry, I couldn't fetch a response.";
     }
   }
+
 
   String _cleanResponse(String response) {
     return response.replaceAll("*", "").replaceAll("_", "").replaceAll("`", "").replaceAll("\n\n", "\n");

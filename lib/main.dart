@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:seed/models/crop_prediction/tflite_model.dart';
+import 'package:seed/screens/onboarding.dart';
 import 'screens/home.dart';
 
 void main() async{
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: HomeScreen(),
+      home: OnboardingScreen(),
     );
   }
 }

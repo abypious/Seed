@@ -24,6 +24,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   final List<Widget> _screens = [
     const WeatherOutlookScreen(),
+
     InputScreen(),
     const IrrigationScreen(),
     const FertilizerRecommendationScreen(),
@@ -42,7 +43,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           _screens[_selectedIndex],
 
-          // Show chatbot only on the Home screen (_selectedIndex == 0)
           if (_selectedIndex == 0)
             Align(
               alignment: Alignment.bottomRight,

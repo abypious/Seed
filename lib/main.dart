@@ -3,7 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:seed/models/crop_prediction/tflite_model.dart';
-import 'screens/home.dart';
+import 'package:seed/routes.dart';
+// import 'screens/home.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,8 +21,10 @@ void main() async{
         await Firebase.initializeApp();
   }
   runApp(
-    ChangeNotifierProvider<TFLiteModel>(
-      create: (context) => TFLiteModel(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => TFLiteModel()), // Register Provider
+      ],
       child: MyApp(),
     ),
   );
@@ -31,7 +34,19 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: HomeScreen(),
+      debugShowCheckedModeBanner: false,
+      title: 'Crop Prediction',
+      initialRoute: '/',
+      // Ensure it starts from the home screen
+      onUnknownRoute: (settings) =>
+          MaterialPageRoute(
+            builder: (context) =>
+                Scaffold(
+                  body: Center(child: Text("404: Route Not Found!")),
+                ),
+          ),
+      // Use the defined routes
+      routes: routes, // Handle unknown routes gracefully
     );
   }
 }

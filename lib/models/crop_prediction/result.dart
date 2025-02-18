@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 
 class ResultScreen extends StatelessWidget {
-  final String predictionResult;
-
-  ResultScreen({required this.predictionResult});
-
   @override
   Widget build(BuildContext context) {
+    final String predictionResult = ModalRoute.of(context)!.settings.arguments as String;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -31,9 +29,7 @@ class ResultScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Title text
             const Text(
               'Here are the top predicted crops for your land:',
               style: TextStyle(
@@ -44,8 +40,6 @@ class ResultScreen extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 30),
-
-            // Result Container
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -61,31 +55,19 @@ class ResultScreen extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               child: Text(
                 predictionResult,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black87),
                 textAlign: TextAlign.center,
               ),
             ),
-
             const SizedBox(height: 40),
-
-            // Button to go back to the previous screen
             ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context); // Pop the ResultScreen and go back to the InputScreen
-              },
+              onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.amber,
                 padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 32),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
-              child: const Text(
-                'Go Back',
-                style: TextStyle(color: Colors.black, fontSize: 18),
-              ),
+              child: const Text('Go Back', style: TextStyle(color: Colors.black, fontSize: 18)),
             ),
           ],
         ),

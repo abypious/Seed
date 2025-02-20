@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'tflite_model.dart';
-import 'result.dart';
 
 class InputScreen extends StatefulWidget {
   @override
@@ -18,6 +17,8 @@ class _InputScreenState extends State<InputScreen> {
   final TextEditingController humidityController = TextEditingController();
   final TextEditingController rainfallController = TextEditingController();
 
+  bool _isLoading = false; // Loading state
+
   @override
   void initState() {
     super.initState();
@@ -29,21 +30,28 @@ class _InputScreenState extends State<InputScreen> {
     final model = Provider.of<TFLiteModel>(context, listen: false);
 
     if (!model.isModelLoaded) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Model is loading. Please wait...")),
+      );
       return;
     }
 
     if (_formKey.currentState!.validate()) {
-      List<double> inputValues = [
-        double.parse(nController.text),
-        double.parse(pController.text),
-        double.parse(kController.text),
-        double.parse(tempController.text),
-        double.parse(phController.text),
-        double.parse(humidityController.text),
-        double.parse(rainfallController.text),
-      ];
+      setState(() {
+        _isLoading = true; // Show loading indicator
+      });
 
       try {
+        List<double> inputValues = [
+          double.parse(nController.text),
+          double.parse(pController.text),
+          double.parse(kController.text),
+          double.parse(tempController.text),
+          double.parse(phController.text),
+          double.parse(humidityController.text),
+          double.parse(rainfallController.text),
+        ];
+
         List<Map<String, dynamic>> predictions = await model.predict(inputValues);
 
         String predictionResult = "Top 3 Crops:\n";
@@ -53,15 +61,21 @@ class _InputScreenState extends State<InputScreen> {
           predictionResult += "${index + 1}. ${prediction['crop']}: $confidencePercentage%\n";
         });
 
-        // Navigate to ResultScreen and pass the prediction result
-        Navigator.push(
+        // Navigate to ResultScreen using Named Route
+        Navigator.pushNamed(
           context,
-          MaterialPageRoute(
-            builder: (context) => ResultScreen(predictionResult: predictionResult),
-          ),
+          '/result',
+          arguments: predictionResult,
         );
       } catch (e) {
         print("Error during prediction: $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: Could not process prediction.")),
+        );
+      } finally {
+        setState(() {
+          _isLoading = false; // Hide loading indicator
+        });
       }
     }
   }
@@ -78,9 +92,9 @@ class _InputScreenState extends State<InputScreen> {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(  // Wrap the body in SingleChildScrollView
+      body: SingleChildScrollView(
         child: Container(
-          color: const Color(0xFFD9FFD2), // Light pink background
+          color: const Color(0xFFD9FFD2), // Light green background
           padding: const EdgeInsets.all(16.0),
           child: Form(
             key: _formKey,
@@ -101,7 +115,9 @@ class _InputScreenState extends State<InputScreen> {
                 _buildTextField(rainfallController, 'Rainfall (mm)'),
                 const SizedBox(height: 20),
                 Center(
-                  child: ElevatedButton(
+                  child: _isLoading
+                      ? CircularProgressIndicator() // Show loading animation
+                      : ElevatedButton(
                     onPressed: _predictCrop,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.amber,
@@ -138,6 +154,9 @@ class _InputScreenState extends State<InputScreen> {
         validator: (value) {
           if (value == null || value.isEmpty) {
             return 'Please enter a value';
+          }
+          if (double.tryParse(value) == null) {
+            return 'Invalid number';
           }
           return null;
         },

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+// import 'pest/pest.dart'; // Import
+import 'package:seed/pest/pest.dart';
 import 'package:seed/models/crop_prediction/input_screen.dart';
 import 'functions/ai_assistant_screen.dart';
 import 'functions/fertilizer.dart';
 import 'functions/irrigation_planner_screen.dart';
 import 'functions/weather_outlook_screen.dart';
-
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -28,14 +29,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     InputScreen(),
     const IrrigationScreen(),
     const FertilizerRecommendationScreen(),
-
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_getAppBarTitle()), // Dynamic title
+        title: Text(_getAppBarTitle()),
         backgroundColor: Colors.green,
         automaticallyImplyLeading: false,
       ),
@@ -43,6 +43,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           _screens[_selectedIndex],
 
+          // Show Pest Detection Button & Chatbot only on Home Screen (_selectedIndex == 0)
           if (_selectedIndex == 0)
             Align(
               alignment: Alignment.bottomRight,
@@ -52,6 +53,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
+                    // Pest Detection Button
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => PlantDiseaseScreen()),
+                        );
+                      },
+                      icon: Icon(Icons.bug_report, color: Colors.white),
+                      label: Text("Disease Detection"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green.shade700,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        textStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+
+                    // Chatbot Bubble
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: const BoxDecoration(
@@ -68,7 +90,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         style: TextStyle(color: Colors.black87, fontSize: 13),
                       ),
                     ),
-                    const SizedBox(height: 6), // Space between text & button
+                    const SizedBox(height: 6),
+
+                    // Chatbot Icon
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
@@ -99,7 +123,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               padding: const EdgeInsets.all(6),
               child: Icon(
                 _getIcon(index),
-                size: _selectedIndex == index ? 32 : 24, // Animated size
+                size: _selectedIndex == index ? 32 : 24,
                 color: _selectedIndex == index ? Colors.green : Colors.grey,
               ),
             ),
@@ -114,7 +138,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-// Function to get dynamic AppBar title
   String _getAppBarTitle() {
     switch (_selectedIndex) {
       case 0:
@@ -130,7 +153,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-// Function to get icon for BottomNavigationBar
   IconData _getIcon(int index) {
     switch (index) {
       case 0:
@@ -146,7 +168,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-// Function to get label for BottomNavigationBar
   String _getLabel(int index) {
     switch (index) {
       case 0:

@@ -25,6 +25,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   final List<Widget> _screens = [
     const WeatherOutlookScreen(),
+
     InputScreen(),
     const IrrigationScreen(),
     const FertilizerRecommendationScreen(),

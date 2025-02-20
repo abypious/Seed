@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:seed/models/crop_prediction/tflite_model.dart';
 import 'package:seed/routes.dart';
-// import 'screens/home.dart';
+import 'package:seed/screens/onboarding.dart';
+import 'screens/home.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,7 +38,6 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Crop Prediction',
       initialRoute: '/',
-      // Ensure it starts from the home screen
       onUnknownRoute: (settings) =>
           MaterialPageRoute(
             builder: (context) =>
@@ -47,6 +47,7 @@ class MyApp extends StatelessWidget {
           ),
       // Use the defined routes
       routes: routes, // Handle unknown routes gracefully
+      home: OnboardingScreen(),
     );
   }
 }

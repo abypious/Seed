@@ -7,14 +7,14 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home'),
+        title: const Text('Home'),
         backgroundColor: Colors.green, // Change color as needed
       ),
       drawer: Drawer( // Sidebar menu
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            DrawerHeader(
+            const DrawerHeader(
               decoration: BoxDecoration(color: Colors.green),
               child: Text(
                 'Menu',
@@ -22,18 +22,18 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.dashboard),
-              title: Text('Dashboard'),
+              leading: const Icon(Icons.dashboard),
+              title: const Text('Dashboard'),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => DashboardScreen()),
+                  MaterialPageRoute(builder: (context) => const DashboardScreen()),
                 );
               },
             ),
             ListTile(
-              leading: Icon(Icons.login),
-              title: Text('Login'),
+              leading: const Icon(Icons.login),
+              title: const Text('Login'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -42,8 +42,8 @@ class HomeScreen extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: Icon(Icons.logout),
-              title: Text('Logout'),
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
               onTap: () {
                 // Add logout functionality
               },
@@ -55,21 +55,21 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
+            const Text(
               'Welcome to Seed App!',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => DashboardScreen()),
+                  MaterialPageRoute(builder: (context) => const DashboardScreen()),
                 );
               },
-              child: Text('Go to Dashboard'),
+              child: const Text('Go to Dashboard'),
             ),
-            SizedBox(height: 10), // Space between buttons
+            const SizedBox(height: 10), // Space between buttons
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -77,7 +77,7 @@ class HomeScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => LoginScreen()),
                 );
               },
-              child: Text('Login'),
+              child: const Text('Login'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue, // Custom button color
               ),

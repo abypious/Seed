@@ -19,7 +19,7 @@ class TFLiteModel extends ChangeNotifier {
   // Load TFLite model
   Future<void> loadModel() async {
     try {
-      _interpreter = await Interpreter.fromAsset('assets/ensemble_model.tflite');
+      _interpreter = await Interpreter.fromAsset('assets/crop_predict/ensemble_model.tflite');
       _isModelLoaded = true;  // Set flag to true after loading
       notifyListeners();
     } catch (e) {

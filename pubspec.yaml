@@ -20,7 +20,7 @@ dependencies:
   firebase_auth: ^5.4.1
   firebase_core: ^3.10.1
   google_sign_in: ^6.2.2
-  cloud_firestore: ^5.6.2
+  cloud_firestore: ^5.6.4
   provider: ^6.1.2
   shared_preferences: ^2.0.18
   flutter_native_splash: ^2.4.4
@@ -38,7 +38,7 @@ dev_dependencies:
 
 flutter_native_splash:
     color: "#2596be"  # Background color
-    image: assets/images/seed10.png  # Path to your logo/image
+    image: assets/images/seed10.png
     android_12:
       image: assets/images/seed10.png
       color: "#2596be"

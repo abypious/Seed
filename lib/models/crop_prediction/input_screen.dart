@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'tflite_model.dart';
 
 class InputScreen extends StatefulWidget {
@@ -18,12 +20,40 @@ class _InputScreenState extends State<InputScreen> {
   final TextEditingController rainfallController = TextEditingController();
 
   bool _isLoading = false; // Loading state
-
   @override
   void initState() {
     super.initState();
     final model = Provider.of<TFLiteModel>(context, listen: false);
     model.loadModel();
+    _fetchSensorData(); // Fetch data from ESP device (except rainfall)
+  }
+
+  Future<void> _fetchSensorData() async {
+    try {
+      const String espUrl = "http://192.168.4.1/"; // Change this to your ESP32 device's IP
+      final response = await http.get(Uri.parse(espUrl));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+
+        setState(() {
+          nController.text = data["nitrogen"].toString();
+          pController.text = data["phosphorus"].toString();
+          kController.text = data["potassium"].toString();
+          tempController.text = data["temperature"].toString();
+          phController.text = data["pH"].toString();
+          humidityController.text = data["moisture"].toString();
+          _isLoading = false; // Data fetched, stop loading indicator
+        });
+      } else {
+        throw Exception("Failed to fetch data from ESP.");
+      }
+    } catch (e) {
+      print("Error fetching data: $e");
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   void _predictCrop() async {
@@ -92,6 +122,7 @@ class _InputScreenState extends State<InputScreen> {
         ),
         centerTitle: true,
       ),
+
       body: SingleChildScrollView(
         child: Container(
           color: const Color(0xFFD9FFD2), // Light green background
@@ -112,7 +143,7 @@ class _InputScreenState extends State<InputScreen> {
                 _buildTextField(tempController, 'Temperature (°C)'),
                 _buildTextField(phController, 'pH Level'),
                 _buildTextField(humidityController, 'Humidity (%)'),
-                _buildTextField(rainfallController, 'Rainfall (mm)'),
+                _buildTextField(rainfallController, 'Rainfall (mm)', optional: true), // Manual input
                 const SizedBox(height: 20),
                 Center(
                   child: _isLoading
@@ -135,7 +166,7 @@ class _InputScreenState extends State<InputScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label) {
+  Widget _buildTextField(TextEditingController controller, String label, {bool optional = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
@@ -152,7 +183,7 @@ class _InputScreenState extends State<InputScreen> {
           ),
         ),
         validator: (value) {
-          if (value == null || value.isEmpty) {
+          if (!optional && (value == null || value.isEmpty)) {
             return 'Please enter a value';
           }
           if (double.tryParse(value) == null) {

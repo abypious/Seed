@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:seed/models/crop_prediction/tflite_model.dart';
-import 'package:seed/routes.dart';
 import 'package:seed/screens/onboarding.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'components/splashScreen.dart';

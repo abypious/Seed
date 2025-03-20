@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+// import 'pest/pest.dart'; // Import
+import 'package:seed/pest/pest.dart';
 import 'package:seed/models/crop_prediction/input_screen.dart';
 import 'functions/ai_assistant_screen.dart';
 import 'functions/cropAtlas.dart';
@@ -180,7 +182,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       },
     );
   }
-
   String _getAppBarTitle() {
     switch (_selectedIndex) {
       case 0: return "Home";

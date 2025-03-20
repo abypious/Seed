@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'tflite_model.dart';
-import 'result.dart';
 
 class InputScreen extends StatefulWidget {
   @override
@@ -18,32 +19,69 @@ class _InputScreenState extends State<InputScreen> {
   final TextEditingController humidityController = TextEditingController();
   final TextEditingController rainfallController = TextEditingController();
 
+  bool _isLoading = false; // Loading state
   @override
   void initState() {
     super.initState();
     final model = Provider.of<TFLiteModel>(context, listen: false);
     model.loadModel();
+    _fetchSensorData(); // Fetch data from ESP device (except rainfall)
+  }
+
+  Future<void> _fetchSensorData() async {
+    try {
+      const String espUrl = "http://192.168.4.1/"; // Change this to your ESP32 device's IP
+      final response = await http.get(Uri.parse(espUrl));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+
+        setState(() {
+          nController.text = data["nitrogen"].toString();
+          pController.text = data["phosphorus"].toString();
+          kController.text = data["potassium"].toString();
+          tempController.text = data["temperature"].toString();
+          phController.text = data["pH"].toString();
+          humidityController.text = data["moisture"].toString();
+          _isLoading = false; // Data fetched, stop loading indicator
+        });
+      } else {
+        throw Exception("Failed to fetch data from ESP.");
+      }
+    } catch (e) {
+      print("Error fetching data: $e");
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   void _predictCrop() async {
     final model = Provider.of<TFLiteModel>(context, listen: false);
 
     if (!model.isModelLoaded) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Model is loading. Please wait...")),
+      );
       return;
     }
 
     if (_formKey.currentState!.validate()) {
-      List<double> inputValues = [
-        double.parse(nController.text),
-        double.parse(pController.text),
-        double.parse(kController.text),
-        double.parse(tempController.text),
-        double.parse(phController.text),
-        double.parse(humidityController.text),
-        double.parse(rainfallController.text),
-      ];
+      setState(() {
+        _isLoading = true; // Show loading indicator
+      });
 
       try {
+        List<double> inputValues = [
+          double.parse(nController.text),
+          double.parse(pController.text),
+          double.parse(kController.text),
+          double.parse(tempController.text),
+          double.parse(phController.text),
+          double.parse(humidityController.text),
+          double.parse(rainfallController.text),
+        ];
+
         List<Map<String, dynamic>> predictions = await model.predict(inputValues);
 
         String predictionResult = "Top 3 Crops:\n";
@@ -53,15 +91,21 @@ class _InputScreenState extends State<InputScreen> {
           predictionResult += "${index + 1}. ${prediction['crop']}: $confidencePercentage%\n";
         });
 
-        // Navigate to ResultScreen and pass the prediction result
-        Navigator.push(
+        // Navigate to ResultScreen using Named Route
+        Navigator.pushNamed(
           context,
-          MaterialPageRoute(
-            builder: (context) => ResultScreen(predictionResult: predictionResult),
-          ),
+          '/result',
+          arguments: predictionResult,
         );
       } catch (e) {
         print("Error during prediction: $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: Could not process prediction.")),
+        );
+      } finally {
+        setState(() {
+          _isLoading = false; // Hide loading indicator
+        });
       }
     }
   }
@@ -78,9 +122,10 @@ class _InputScreenState extends State<InputScreen> {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(  // Wrap the body in SingleChildScrollView
+
+      body: SingleChildScrollView(
         child: Container(
-          color: const Color(0xFFD9FFD2), // Light pink background
+          color: const Color(0xFFD9FFD2), // Light green background
           padding: const EdgeInsets.all(16.0),
           child: Form(
             key: _formKey,
@@ -98,10 +143,12 @@ class _InputScreenState extends State<InputScreen> {
                 _buildTextField(tempController, 'Temperature (°C)'),
                 _buildTextField(phController, 'pH Level'),
                 _buildTextField(humidityController, 'Humidity (%)'),
-                _buildTextField(rainfallController, 'Rainfall (mm)'),
+                _buildTextField(rainfallController, 'Rainfall (mm)', optional: true), // Manual input
                 const SizedBox(height: 20),
                 Center(
-                  child: ElevatedButton(
+                  child: _isLoading
+                      ? CircularProgressIndicator() // Show loading animation
+                      : ElevatedButton(
                     onPressed: _predictCrop,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.amber,
@@ -119,7 +166,7 @@ class _InputScreenState extends State<InputScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label) {
+  Widget _buildTextField(TextEditingController controller, String label, {bool optional = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
@@ -136,8 +183,11 @@ class _InputScreenState extends State<InputScreen> {
           ),
         ),
         validator: (value) {
-          if (value == null || value.isEmpty) {
+          if (!optional && (value == null || value.isEmpty)) {
             return 'Please enter a value';
+          }
+          if (double.tryParse(value) == null) {
+            return 'Invalid number';
           }
           return null;
         },

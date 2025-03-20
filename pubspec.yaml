@@ -30,48 +30,30 @@ dependencies:
   lottie: ^3.2.0
   image_picker: ^1.1.2
   google_fonts: ^6.2.1
+  excel: ^4.0.6
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-
   flutter_lints: ^4.0.0
 
-
 flutter_native_splash:
-  color: "#ffffff"  # Background color of the splash screen
-  image: assets/images/logo.png  # Path to your splash image
-    color: "#2596be"  # Background color
-    image: assets/images/seed10.png
-    android_12:
-      image: assets/images/seed10.png
-      color: "#2596be"
+  color: "#ffffff"
+  image: assets/images/logo.png
 
+  android_12:
+    image: assets/images/seed10.png
+    color: "#2596be"
 
 flutter:
   uses-material-design: true
 
   assets:
-     - assets/images/google_logo.png
-     - assets/images/seed.jpg
-     - assets/weather/clear.jpg
-     - assets/weather/rain.jpg
-     - assets/weather/cloudy.jpg
-     - assets/images/chatbot1.png
-     - assets/images/chat.png
-     - assets/images/seed10.png
-     - assets/crop_predict/ensemble_model.tflite
-     - assets/crop_predict/labels.txt
-     - assets/images/onboarding1.png
-     - assets/images/onboarding2.png
-     - assets/images/onboarding3.png
-     - assets/images/on.png
-     - assets/lottie/lottie.json
-     - assets/atlas/KeralaBlankMap.svg
-     - assets/atlas/KeralaMap.svg
-     - assets/atlas/KeralaMapNew.svg
-     - assets/images/logo.png
-
-
-
+     - assets/images/
+     - assets/weather/
+     - assets/images/
+     - assets/crop_predict/
+     - assets/lottie/
+     - assets/atlas/
+     - assets/rain_data/

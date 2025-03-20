@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'tflite_model.dart';
+import 'ExcelService.dart';
 
 class InputScreen extends StatefulWidget {
   @override
@@ -10,187 +7,127 @@ class InputScreen extends StatefulWidget {
 }
 
 class _InputScreenState extends State<InputScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController nController = TextEditingController();
-  final TextEditingController pController = TextEditingController();
-  final TextEditingController kController = TextEditingController();
-  final TextEditingController tempController = TextEditingController();
-  final TextEditingController phController = TextEditingController();
-  final TextEditingController humidityController = TextEditingController();
-  final TextEditingController rainfallController = TextEditingController();
+  final TextEditingController _landSizeController = TextEditingController();
+  final TextEditingController _testSamplesController = TextEditingController();
 
-  bool _isLoading = false; // Loading state
-  @override
-  void initState() {
-    super.initState();
-    final model = Provider.of<TFLiteModel>(context, listen: false);
-    model.loadModel();
-    _fetchSensorData(); // Fetch data from ESP device (except rainfall)
-  }
+  String? selectedDistrict;
+  String? selectedObservatory;
+  double? rainfall;
 
-  Future<void> _fetchSensorData() async {
-    try {
-      const String espUrl = "http://192.168.4.1/"; // Change this to your ESP32 device's IP
-      final response = await http.get(Uri.parse(espUrl));
+  final List<String> districts = [
+    'Thiruvananthapuram', 'Kollam', 'Pathanamthitta', 'Alappuzha', 'Kottayam', 'Idukki',
+    'Ernakulam', 'Thrissur', 'Palakkad', 'Malappuram', 'Kozhikode', 'Wayanad', 'Kannur', 'Kasargod'
+  ];
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
+  final Map<String, List<String>> observatories = {
+    'Thiruvananthapuram': ['Neyyattinkara', 'Thiruvananthapur AP (OBSY)', 'Thiruvananthapur (OBSY)', 'Varkala'],
+    'Kollam': ['Aryankavu', 'Kollam (RLY)', 'Punalur (OBSY)'],
+    'Pathanamthitta': ['Konni', 'Kurudamannil'],
+    'Alappuzha': ['Alappuzha', 'Cherthala', 'Haripad', 'Kayamkulam (Agro)', 'Kayamkulam (RARS)', 'Mancompu', 'Mavelikara'],
+    'Kottayam': ['Kanjirappally', 'Kottayam (RRII) (OBSY)', 'Kozha', 'Kumarakom', 'Vaikom'],
+    'Idukki': ['Idukki', 'Munnar (KSEB)', 'Myladumpara Agri', 'Peermade(TO)', 'Thodupuzha'],
+    'Ernakulam': ['Alwaye PWD', 'CIAL Kochi (OBSY)', 'Ernakulam', 'NAS Kochi (OBSY)', 'Perumpavur', 'Piravam'],
+    'Thrissur': ['Chalakudi', 'Enamakal', 'Irinjalakuda', 'Kodungallur', 'Kunnamkulam', 'Vadakkancherry', 'Vellanikkarai (OBSY)'],
+    'Palakkad': ['Alathur (Hydro)', 'Chittur', 'Kollengode', 'Mannarkad', 'Ottapalam', 'Palakkad (OBSY)', 'Parambikulam', 'Pattambi (Agro)', 'Trithala'],
+    'Malappuram': ['Angadipuram', 'Karipur AP (OBSY)', 'Manjeri', 'Nilambur', 'Perinthalamanna', 'Ponnani'],
+    'Kozhikode': ['Kozhikode (OBSY)', 'Quilandi', 'Vadakara'],
+    'Wayanad': ['Ambalavayal', 'Kuppadi', 'Mananthavady', 'Vythiri'],
+    'Kannur': ['Irikkur', 'Kannur (OBSY)', 'Mahe', 'Taliparamba', 'Thalasserry'],
+    'Kasargod': ['Hosdurg', 'Kudulu']
+  };
 
-        setState(() {
-          nController.text = data["nitrogen"].toString();
-          pController.text = data["phosphorus"].toString();
-          kController.text = data["potassium"].toString();
-          tempController.text = data["temperature"].toString();
-          phController.text = data["pH"].toString();
-          humidityController.text = data["moisture"].toString();
-          _isLoading = false; // Data fetched, stop loading indicator
-        });
-      } else {
-        throw Exception("Failed to fetch data from ESP.");
-      }
-    } catch (e) {
-      print("Error fetching data: $e");
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  void _predictCrop() async {
-    final model = Provider.of<TFLiteModel>(context, listen: false);
-
-    if (!model.isModelLoaded) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Model is loading. Please wait...")),
-      );
+  void _fetchRainfallData() async {
+    if (selectedDistrict == null || selectedObservatory == null) {
       return;
     }
 
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true; // Show loading indicator
-      });
-
-      try {
-        List<double> inputValues = [
-          double.parse(nController.text),
-          double.parse(pController.text),
-          double.parse(kController.text),
-          double.parse(tempController.text),
-          double.parse(phController.text),
-          double.parse(humidityController.text),
-          double.parse(rainfallController.text),
-        ];
-
-        List<Map<String, dynamic>> predictions = await model.predict(inputValues);
-
-        String predictionResult = "Top 3 Crops:\n";
-        predictions.asMap().forEach((index, prediction) {
-          double confidence = double.tryParse(prediction['confidence'].toString()) ?? 0.0;
-          int confidencePercentage = (confidence * 100).toInt();
-          predictionResult += "${index + 1}. ${prediction['crop']}: $confidencePercentage%\n";
-        });
-
-        // Navigate to ResultScreen using Named Route
-        Navigator.pushNamed(
-          context,
-          '/result',
-          arguments: predictionResult,
-        );
-      } catch (e) {
-        print("Error during prediction: $e");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: Could not process prediction.")),
-        );
-      } finally {
-        setState(() {
-          _isLoading = false; // Hide loading indicator
-        });
-      }
-    }
+    double? avgRainfall = await ExcelService.getRainfallAverage(selectedDistrict!, selectedObservatory!);
+    setState(() {
+      rainfall = avgRainfall;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'Enter Parameters',
-          style: TextStyle(color: Colors.black, fontSize: 22, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-      ),
-
-      body: SingleChildScrollView(
-        child: Container(
-          color: const Color(0xFFD9FFD2), // Light green background
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Enter the required parameters to predict the best crop for your land.',
-                  style: TextStyle(fontSize: 16, color: Colors.black87),
-                ),
-                const SizedBox(height: 16),
-                _buildTextField(nController, 'Nitrogen'),
-                _buildTextField(pController, 'Phosphorus'),
-                _buildTextField(kController, 'Potassium'),
-                _buildTextField(tempController, 'Temperature (°C)'),
-                _buildTextField(phController, 'pH Level'),
-                _buildTextField(humidityController, 'Humidity (%)'),
-                _buildTextField(rainfallController, 'Rainfall (mm)', optional: true), // Manual input
-                const SizedBox(height: 20),
-                Center(
-                  child: _isLoading
-                      ? CircularProgressIndicator() // Show loading animation
-                      : ElevatedButton(
-                    onPressed: _predictCrop,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 32),
-                    ),
-                    child: const Text('Predict', style: TextStyle(color: Colors.black, fontSize: 18)),
-                  ),
-                ),
-              ],
+      appBar: AppBar(title: const Text('Test Input Details')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _landSizeController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Enter land size (in acres)',
+                border: OutlineInputBorder(),
+              ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
+            const SizedBox(height: 15),
 
-  Widget _buildTextField(TextEditingController controller, String label, {bool optional = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: TextInputType.number,
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: const TextStyle(fontSize: 14, color: Colors.grey),
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none,
-          ),
+            DropdownButtonFormField<String>(
+              value: selectedDistrict,
+              hint: const Text('Select District'),
+              items: districts.map((district) {
+                return DropdownMenuItem(
+                  value: district,
+                  child: Text(district),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedDistrict = value;
+                  selectedObservatory = null; // Reset observatory selection
+                });
+              },
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 15),
+
+            DropdownButtonFormField<String>(
+              value: selectedObservatory,
+              hint: const Text('Select Observatory'),
+              items: (selectedDistrict != null)
+                  ? observatories[selectedDistrict!]!.map((obs) {
+                return DropdownMenuItem(
+                  value: obs,
+                  child: Text(obs),
+                );
+              }).toList()
+                  : [],
+              onChanged: (value) {
+                setState(() {
+                  selectedObservatory = value;
+                });
+              },
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 15),
+
+            TextField(
+              controller: _testSamplesController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Number of test samples',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            ElevatedButton(
+              onPressed: _fetchRainfallData,
+              child: const Text('Get Rainfall Data'),
+            ),
+            const SizedBox(height: 20),
+
+            if (rainfall != null)
+              Text(
+                'Average Rainfall for this month: ${rainfall!.toStringAsFixed(2)} mm',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+          ],
         ),
-        validator: (value) {
-          if (!optional && (value == null || value.isEmpty)) {
-            return 'Please enter a value';
-          }
-          if (double.tryParse(value) == null) {
-            return 'Invalid number';
-          }
-          return null;
-        },
       ),
     );
   }

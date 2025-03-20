@@ -1,30 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'home.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  bool isFirstTime = prefs.getBool('first_time') ?? true;
-
-  runApp(MyApp(isFirstTime: isFirstTime));
-}
-
-class MyApp extends StatelessWidget {
-  final bool isFirstTime;
-  const MyApp({super.key, required this.isFirstTime});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'SEED App',
-      home: isFirstTime ? OnboardingScreen() : HomeScreen(),
-    );
-  }
-}
 
 class OnboardingScreen extends StatefulWidget {
+  final VoidCallback onComplete;
+
+  const OnboardingScreen({super.key, required this.onComplete});
+
   @override
   _OnboardingScreenState createState() => _OnboardingScreenState();
 }
@@ -55,10 +37,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('first_time', false);
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => HomeScreen()),
-    );
+    // Call the function passed from main.dart
+    widget.onComplete();
   }
 
   @override
@@ -79,7 +59,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 20), // Space for dots at the top
+                    const SizedBox(height: 20),
                     Image.asset(onboardingData[index]['image']!, height: 250),
                     const SizedBox(height: 20),
                     Text(
@@ -115,9 +95,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             },
           ),
 
-          // Dots Indicator (Fixed at the Top)
+          // Dots Indicator
           Positioned(
-            top: 60, // Adjust as needed
+            top: 60,
             left: 0,
             right: 0,
             child: Row(
@@ -141,7 +121,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
       bottomSheet: _currentPage != onboardingData.length - 1
           ? Container(
-        color: Color(0xff7de26d),
+        color: const Color(0xff7de26d),
         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -151,7 +131,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: Text("Skip", style: TextStyle(fontSize: 16, color: Colors.grey[700])),
             ),
             IconButton(
-              icon: Icon(Icons.arrow_forward, size: 28, color: Colors.grey[700],),
+              icon: Icon(Icons.arrow_forward, size: 28, color: Colors.grey[700]),
               onPressed: () {
                 _controller.nextPage(
                   duration: const Duration(milliseconds: 300),

@@ -7,12 +7,12 @@ class ResultScreen extends StatelessWidget {
 
   Map<String, double> computeAverages() {
     Map<String, double> averages = {
+      "Moisture": 0,
+      "Temperature": 0,
+      "pH Level": 0,
       "Nitrogen": 0,
       "Phosphorus": 0,
       "Potassium": 0,
-      "Temperature": 0,
-      "pH Level": 0,
-      "Moisture": 0,
       "Rainfall": 0,
     };
 
@@ -74,8 +74,6 @@ class ResultScreen extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
-
-            // Improved Card Layout
             Card(
               elevation: 6,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -84,12 +82,12 @@ class ResultScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
+                    _buildDataRow("Moisture", "${averages["Moisture"]!.toStringAsFixed(2)}%"),
+                    _buildDataRow("Temperature", "${averages["Temperature"]!.toStringAsFixed(2)}°C"),
+                    _buildDataRow("pH Level", "${averages["pH Level"]!.toStringAsFixed(2)}"),
                     _buildDataRow("Nitrogen", "${averages["Nitrogen"]!.toStringAsFixed(2)}"),
                     _buildDataRow("Phosphorus", "${averages["Phosphorus"]!.toStringAsFixed(2)}"),
                     _buildDataRow("Potassium", "${averages["Potassium"]!.toStringAsFixed(2)}"),
-                    _buildDataRow("Temperature", "${averages["Temperature"]!.toStringAsFixed(2)}°C"),
-                    _buildDataRow("pH Level", "${averages["pH Level"]!.toStringAsFixed(2)}"),
-                    _buildDataRow("Moisture", "${averages["Moisture"]!.toStringAsFixed(2)}%"),
                     _buildDataRow("Rainfall", "${averages["Rainfall"]!.toStringAsFixed(2)} mm"),
                   ],
                 ),
@@ -118,7 +116,6 @@ class ResultScreen extends StatelessWidget {
     );
   }
 
-  // Function to create a better-looking row for data display
   Widget _buildDataRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),

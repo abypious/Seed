@@ -46,7 +46,7 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
     _loadSavedData();
   }
 
-  /// Load saved data from SharedPreferences
+  // Load saved data from SharedPreferences
   Future<void> _loadSavedData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -57,7 +57,7 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
     });
   }
 
-  /// Save user input to SharedPreferences
+  // Save user input to SharedPreferences
   Future<void> _saveData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('landArea', landAreaController.text);
@@ -66,7 +66,7 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
     await prefs.setInt('sampleCount', sampleCount);
   }
 
-  /// Fetch rainfall data when an observatory is selected
+  // Fetch rainfall data when an observatory is selected
   Future<void> _fetchRainfallData() async {
     setState(() {
       rainfallData = "Fetching rainfall data...";
@@ -78,7 +78,7 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
     });
   }
 
-  /// **Determine min samples based on land area**
+  // Determine min samples based on land area
   void _updateSampleRequirement() {
     double? landArea = double.tryParse(landAreaController.text);
     if (landArea == null || landArea <= 0) {
@@ -114,7 +114,6 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                /// **Land Area Input**
                 TextFormField(
                   controller: landAreaController,
                   decoration: const InputDecoration(
@@ -127,8 +126,6 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
                 ),
 
                 const SizedBox(height: 16),
-
-                /// **District Selection**
                 DropdownButtonFormField<String>(
                   decoration: _inputDecoration('Select District', Icons.location_city),
                   value: selectedDistrict,
@@ -173,7 +170,6 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
                   Text(rainfallData, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ],
 
-                /// **Test Samples Slider**
                 const SizedBox(height: 16),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,7 +195,6 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
 
                 const SizedBox(height: 24),
 
-                /// **Submit Button**
                 Center(
                   child: ElevatedButton(
                     onPressed: () {

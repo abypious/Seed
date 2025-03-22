@@ -197,11 +197,9 @@ class _InputScreenState extends State<InputScreen> {
 
             const SizedBox(height: 20),
 
-            // Bottom Buttons in a Single Row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Take Sample / Proceed Button (Dynamic)
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: isLoading
@@ -232,8 +230,6 @@ class _InputScreenState extends State<InputScreen> {
                 ),
 
                 const SizedBox(width: 10),
-
-                // Restart Button (Only Icon)
                 IconButton(
                   icon: const Icon(Icons.restart_alt, color: Colors.red, size: 32),
                   onPressed: _restartProcess,

@@ -16,7 +16,7 @@ class _PlantDiseaseScreenState extends State<PlantDiseaseScreen> {
   String _recommendation = "";
   bool _loading = false;
   final ImagePicker _picker = ImagePicker();
-  final String apiKey = "AIzaSyCY0DbUQNbhYCMWcSwiH5WIBdyQYbf7z10"; // Replace with your API key
+  final String apiKey = "AIzaSyCY0DbUQNbhYCMWcSwiH5WIBdyQYbf7z10";
 
   Future<void> _pickImage(ImageSource source) async {
     final pickedFile = await _picker.pickImage(source: source);
@@ -60,8 +60,6 @@ class _PlantDiseaseScreenState extends State<PlantDiseaseScreen> {
       body: jsonEncode(requestBody),
     );
 
-    print("Response Status Code: ${response.statusCode}");
-    print("Response Body: ${response.body}");
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -99,11 +97,14 @@ class _PlantDiseaseScreenState extends State<PlantDiseaseScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Plant Disease Prediction', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-        backgroundColor: Colors.green.shade700,
+        title: const Text('Plant Disease Prediction'),
+        backgroundColor: Colors.green,
         foregroundColor: Colors.white,
+        automaticallyImplyLeading: false,
       ),
+
         body: SingleChildScrollView(
+
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -112,7 +113,7 @@ class _PlantDiseaseScreenState extends State<PlantDiseaseScreen> {
                 _image != null
                     ? ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.file(_image!, height: 250, fit: BoxFit.cover),
+                  child: Image.file(_image!, height: 250, width: 300, fit: BoxFit.cover),
                 )
                     : Container(
                   height: 250,
@@ -121,11 +122,23 @@ class _PlantDiseaseScreenState extends State<PlantDiseaseScreen> {
                     color: Colors.grey[300],
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(Icons.image, size: 100, color: Colors.grey),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.asset(
+                        'assets/images/pestscan.jpeg',
+                        width: 20,
+                        height: 20,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 _loading
-                    ? CircularProgressIndicator()
+                    ? const CircularProgressIndicator()
                     : _diseaseName.isNotEmpty
                     ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,13 +161,13 @@ class _PlantDiseaseScreenState extends State<PlantDiseaseScreen> {
                                   fontWeight: FontWeight.bold,
                                   color: Colors.redAccent),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
                               _diseaseName,
                               style: GoogleFonts.poppins(
                                   fontSize: 16, color: Colors.black87),
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             Text(
                               "Treatment:",
                               style: GoogleFonts.poppins(
@@ -162,7 +175,7 @@ class _PlantDiseaseScreenState extends State<PlantDiseaseScreen> {
                                   fontWeight: FontWeight.bold,
                                   color: Colors.green),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
                               _recommendation,
                               style: GoogleFonts.poppins(
@@ -175,14 +188,14 @@ class _PlantDiseaseScreenState extends State<PlantDiseaseScreen> {
                   ],
                 )
                     : Container(),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton.icon(
                       onPressed: () => _pickImage(ImageSource.camera),
-                      icon: Icon(Icons.camera_alt),
-                      label: Text("Take Photo"),
+                      icon: const Icon(Icons.camera_alt),
+                      label: const Text("Take Photo"),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green.shade700,
                         foregroundColor: Colors.white,
@@ -190,8 +203,8 @@ class _PlantDiseaseScreenState extends State<PlantDiseaseScreen> {
                     ),
                     ElevatedButton.icon(
                       onPressed: () => _pickImage(ImageSource.gallery),
-                      icon: Icon(Icons.image),
-                      label: Text("Upload Photo"),
+                      icon: const Icon(Icons.image),
+                      label: const Text("Upload Photo"),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green.shade700,
                         foregroundColor: Colors.white,

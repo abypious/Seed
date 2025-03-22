@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/crop_prediction/TestInfoScreen.dart';
+import '../pest/pest.dart';
 import 'functions/ai_assistant_screen.dart';
 import 'functions/cropAtlas.dart';
 import 'functions/fertilizer.dart';
@@ -17,6 +18,14 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
   double _opacity = 1.0;
+
+  final List<Widget> _screens = [
+    const WeatherOutlookScreen(),
+    InputScreen(),
+    const IrrigationScreen(),
+    const FertilizerRecommendationScreen(),
+    const AtlasMap(),
+  ];
 
   @override
   void initState() {
@@ -35,11 +44,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    setState(() => _selectedIndex = index);
   }
-
   final List<Widget> _screens = [
     const WeatherOutlookScreen(),
     TestInfoScreen(),
@@ -47,13 +53,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     const FertilizerRecommendationScreen(),
     const AtlasMap(),
   ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_getAppBarTitle()),
+        title: Text(_getAppBarTitle(_selectedIndex)),
         backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
         automaticallyImplyLeading: false,
       ),
       body: Stack(
@@ -106,18 +112,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
             ),
+          if (_selectedIndex == 0) _buildChatbotAssistant(),
         ],
       ),
-
-
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: FloatingActionButton(
-          backgroundColor: Colors.green,
-          onPressed: () => _showAtlasNavigation(context),
-          child: const Icon(Icons.fmd_good_outlined, color: Colors.white),
-        ),
-      ),
+      floatingActionButton: _selectedIndex == 0
+          ? Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            backgroundColor: Colors.green,
+            onPressed: () => _showAtlasNavigation(context),
+            child: const Icon(Icons.fmd_good_outlined, color: Colors.white),
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton(
+            backgroundColor: Colors.green,
+            onPressed: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) =>  PlantDiseaseScreen()),
+                );
+            },
+            child: const Icon(Icons.qr_code_scanner_sharp, color: Colors.white),
+          ),
+        ],
+      )
+          : null,
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: List.generate(4, (index) {
@@ -134,6 +155,57 @@ class _DashboardScreenState extends State<DashboardScreen> {
         selectedItemColor: Colors.green,
         unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
+      ),
+    );
+  }
+
+  Widget _buildChatbotAssistant() {
+    return Align(
+      alignment: Alignment.bottomRight,
+      child: Padding(
+        padding: const EdgeInsets.only(right: 10, bottom: 90),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            AnimatedOpacity(
+              duration: const Duration(milliseconds: 1000),
+              opacity: _opacity,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFC8E6C9),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(8),
+                    topRight: Radius.circular(8),
+                    bottomLeft: Radius.circular(8),
+                    bottomRight: Radius.circular(0),
+                  ),
+                ),
+                child: const Text(
+                  "What can I help you with?",
+                  style: TextStyle(color: Colors.black87, fontSize: 13),
+                ),
+              ),
+            ),
+            const SizedBox(height: 0),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AIAssistantScreen()),
+                );
+              },
+              child: Image.asset(
+                'assets/images/chatbot1.png',
+                width: 70,
+                height: 70,
+              ),
+
+            ),
+            const SizedBox(height: 50),
+          ],
+        ),
       ),
     );
   }
@@ -180,33 +252,49 @@ class _DashboardScreenState extends State<DashboardScreen> {
       },
     );
   }
-  String _getAppBarTitle() {
-    switch (_selectedIndex) {
-      case 0: return "Home";
-      case 1: return "Crop Advisor";
-      case 2: return "Irrigation";
-      case 3: return "Fertilizer Recommendation";
-      default: return "Dashboard";
+
+  String _getAppBarTitle(int index) {
+    switch (index) {
+      case 0:
+        return "Home";
+      case 1:
+        return "Crop Advisor";
+      case 2:
+        return "Irrigation";
+      case 3:
+        return "Fertilizer Recommendation";
+      default:
+        return "Dashboard";
     }
   }
 
   IconData _getIcon(int index) {
     switch (index) {
-      case 0: return Icons.home;
-      case 1: return Icons.agriculture;
-      case 2: return Icons.water_drop;
-      case 3: return Icons.science;
-      default: return Icons.home;
+      case 0:
+        return Icons.home;
+      case 1:
+        return Icons.agriculture;
+      case 2:
+        return Icons.water_drop;
+      case 3:
+        return Icons.science;
+      default:
+        return Icons.home;
     }
   }
 
   String _getLabel(int index) {
     switch (index) {
-      case 0: return "Home";
-      case 1: return "Crop";
-      case 2: return "Irrigation";
-      case 3: return "Fertilizer";
-      default: return "";
+      case 0:
+        return "Home";
+      case 1:
+        return "Crop";
+      case 2:
+        return "Irrigation";
+      case 3:
+        return "Fertilizer";
+      default:
+        return "";
     }
   }
 }

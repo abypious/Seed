@@ -23,7 +23,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
   String? selectedObservatory;
   String? selectedLandArea;
 
-  final String geminiAPIKey = "AIzaSyCdIb66lRkSPFYuUkQwPtjB2ZQrtw-A68o";
+  final String geminiAPIKey = "AIzaSyCtF2iUXbWtKdk2OCeeavJXR5cjPvoo4AU";
 
   final Map<String, List<String>> _observatoriesByDistrict = {
     'Thiruvananthapuram': ['Neyyattinkara', 'Thiruvananthapur AP (OBSY)', 'Thiruvananthapur (OBSY)', 'Varkala'],
@@ -69,47 +69,58 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
     }
   }
   Future<String> _fetchGeminiResponse(String prompt) async {
-    const String apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
+    const String apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
-    final response = await http.post(
-      Uri.parse("$apiUrl?key=$geminiAPIKey"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "contents": [
-          {
-            "role": "user",
-            "parts": [
-              {
-                "text": """
-              Context: The user is interacting with an AI assistant named SEED.
-              The AI should prioritize answering agricultural questions but also respond to general queries.
-              Limit response length to 4-5 sentences.
 
-              Selected Inputs:
-              - District: ${selectedDistrict ?? "Not provided"}
-              - Observatory: ${selectedObservatory ?? "Not provided"}
-              - Land Area: ${selectedLandArea ?? "Not provided"}
+    try {
+      final response = await http.post(
+        Uri.parse("$apiUrl?key=$geminiAPIKey"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "contents": [
+            {
+              "role": "user",
+              "parts": [
+                {
+                  "text": """
+                Context: The user is interacting with an AI assistant named SEED.
+                The AI should prioritize answering agricultural questions but also respond to general queries.
+                Limit response length to 4-5 sentences.
 
-              User Query: $prompt
-              """
-              }
-            ]
-          }
-        ]
-      }),
-    );
+                Selected Inputs:
+                - District: ${selectedDistrict ?? "Not provided"}
+                - Observatory: ${selectedObservatory ?? "Not provided"}
+                - Land Area: ${selectedLandArea ?? "Not provided"}
 
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> data = jsonDecode(response.body);
-      String aiResponse = data["candidates"][0]["content"]["parts"][0]["text"].trim();
+                User Query: $prompt
+                """
+                }
+              ]
+            }
+          ]
+        }),
+      );
 
-      // Limit response to 3-4 sentences max
-      List<String> sentences = aiResponse.split('. ');
-      return sentences.take(3).join('. ') + '.';
-    } else {
-      return "Sorry, I couldn't fetch a response.";
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+
+        if (data.containsKey("candidates") && data["candidates"].isNotEmpty) {
+          String aiResponse = data["candidates"][0]["content"]["parts"][0]["text"].trim();
+
+          // Limit response to 3-4 sentences max
+          List<String> sentences = aiResponse.split('. ');
+          return '${sentences.take(3).join('. ')}.';
+        } else {
+          return "No valid response from Gemini API.";
+        }
+      } else {
+        return "Error ${response.statusCode}: ${response.body}";
+      }
+    } catch (e) {
+      return "Error: $e";
     }
   }
+
 
 
   String _cleanResponse(String response) {

@@ -1,14 +1,47 @@
 import 'package:flutter/material.dart';
 
 class ResultScreen extends StatelessWidget {
+  final List<Map<String, double>> samples;
+
+  const ResultScreen({Key? key, required this.samples}) : super(key: key);
+
+  Map<String, double> computeAverages() {
+    Map<String, double> averages = {
+      "Nitrogen": 0,
+      "Phosphorus": 0,
+      "Potassium": 0,
+      "Temperature": 0,
+      "pH Level": 0,
+      "Moisture": 0,
+      "Rainfall": 0,
+    };
+
+    if (samples.isEmpty) return averages;
+
+    for (var sample in samples) {
+      averages["Nitrogen"] = (averages["Nitrogen"]! + sample["nitrogen"]!);
+      averages["Phosphorus"] = (averages["Phosphorus"]! + sample["phosphorus"]!);
+      averages["Potassium"] = (averages["Potassium"]! + sample["potassium"]!);
+      averages["Temperature"] = (averages["Temperature"]! + sample["temperature"]!);
+      averages["pH Level"] = (averages["pH Level"]! + sample["pH"]!);
+      averages["Moisture"] = (averages["Moisture"]! + sample["moisture"]!);
+      averages["Rainfall"] = (averages["Rainfall"]! + sample["rainfall"]!);
+    }
+
+    int count = samples.length;
+    averages.updateAll((key, value) => value / count);
+
+    return averages;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final String predictionResult = ModalRoute.of(context)!.settings.arguments as String;
+    final averages = computeAverages();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Prediction Results',
+          'Soil Analysis Result',
           style: TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.bold,
@@ -21,56 +54,86 @@ class ResultScreen extends StatelessWidget {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFFBF8E3), Color(0xFFD9FFD2)], // Soft gradient background
+            colors: [Color(0xFFFFF7E7), Color(0xFFD9FFD2)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
         ),
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Text(
-              'Here are the top predicted crops for your land:',
+              'Averaged Soil Sample Data',
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 26,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 30),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  const BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 8,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.all(20),
-              child: Text(
-                predictionResult,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black87),
-                textAlign: TextAlign.center,
+            const SizedBox(height: 20),
+
+            // Improved Card Layout
+            Card(
+              elevation: 6,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shadowColor: Colors.black26,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    _buildDataRow("Nitrogen", "${averages["Nitrogen"]!.toStringAsFixed(2)}"),
+                    _buildDataRow("Phosphorus", "${averages["Phosphorus"]!.toStringAsFixed(2)}"),
+                    _buildDataRow("Potassium", "${averages["Potassium"]!.toStringAsFixed(2)}"),
+                    _buildDataRow("Temperature", "${averages["Temperature"]!.toStringAsFixed(2)}°C"),
+                    _buildDataRow("pH Level", "${averages["pH Level"]!.toStringAsFixed(2)}"),
+                    _buildDataRow("Moisture", "${averages["Moisture"]!.toStringAsFixed(2)}%"),
+                    _buildDataRow("Rainfall", "${averages["Rainfall"]!.toStringAsFixed(2)} mm"),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 40),
+
+            const SizedBox(height: 30),
+
+            // Proceed Button
             ElevatedButton(
               onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.amber,
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 32),
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 40),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                elevation: 3,
               ),
-              child: const Text('Go Back', style: TextStyle(color: Colors.black, fontSize: 18)),
+              child: const Text(
+                'Proceed',
+                style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // Function to create a better-looking row for data display
+  Widget _buildDataRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black87),
+          ),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.teal),
+          ),
+        ],
       ),
     );
   }

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:seed/models/crop_prediction/input_screen.dart';
+import '../models/crop_prediction/TestInfoScreen.dart';
 import 'functions/ai_assistant_screen.dart';
 import 'functions/cropAtlas.dart';
 import 'functions/fertilizer.dart';
@@ -42,7 +42,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   final List<Widget> _screens = [
     const WeatherOutlookScreen(),
-    InputScreen(),
+    TestInfoScreen(),
     const IrrigationScreen(),
     const FertilizerRecommendationScreen(),
     const AtlasMap(),
@@ -93,7 +93,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => AIAssistantScreen()),
+                          MaterialPageRoute(builder: (context) => const AIAssistantScreen()),
                         );
                       },
                       child: Image.asset(

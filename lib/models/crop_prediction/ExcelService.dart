@@ -1,49 +1,51 @@
 import 'package:excel/excel.dart';
-import 'package:flutter/services.dart';
+import 'dart:typed_data';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:intl/intl.dart';
 
 class ExcelService {
-  /// **Get the average rainfall for the selected observatory & month**
-  static Future<double?> getRainfallAverage(String district, String observatory) async {
+  static Future<double> getCurrentMonthRainfall(String district) async {
     try {
-      // Load the Excel file from assets
-      ByteData data = await rootBundle.load('assets/rain_data/$district.xlsx');
+      String filePath = 'assets/rain_data/$district.xlsx';
+      print("Loading file: $filePath");
+
+      ByteData data = await rootBundle.load(filePath);
       List<int> bytes = data.buffer.asUint8List();
       var excel = Excel.decodeBytes(bytes);
 
-      // Select the first sheet (assuming it contains the data)
-      var sheet = excel.tables.keys.first;
-      var table = excel.tables[sheet];
+      // Debug: Print sheet names
+      print("Sheet Names: ${excel.tables.keys.toList()}");
 
-      // Get the current month (1 = Jan, 2 = Feb, ...)
-      DateTime now = DateTime.now();
-      int currentMonth = now.month;
+      // Get first sheet
+      Sheet? sheet = excel.tables[excel.tables.keys.first];
+      if (sheet == null) throw Exception("Sheet not found!");
 
-      // Store available years of rainfall data
-      List<double> rainfallValues = [];
-
-      for (var row in table!.rows.skip(1)) {
-        String? obsName = row[0]?.value.toString(); // Column 1 = Observatory Name
-        int? month = int.tryParse(row[2]?.value.toString() ?? ''); // Column 3 = Month
-        double? rainfall = double.tryParse(row[3]?.value.toString() ?? ''); // Column 4 = Rainfall
-
-        if (obsName == observatory && month == currentMonth && rainfall != null) {
-          rainfallValues.add(rainfall);
-        }
+      // Debug: Print first two rows
+      for (var row in sheet.rows.take(2)) {
+        print(row.map((cell) => cell?.value).toList());
       }
 
-      // **If there’s no data, return null**
-      if (rainfallValues.isEmpty) {
-        print("No rainfall data available for $observatory in $district.");
-        return null;
-      }
+      // Get current month in lowercase
+      String currentMonth = DateFormat.MMM().format(DateTime.now()).toLowerCase();
+      print("Current month: $currentMonth");
 
-      // **Calculate average using available data (even if less than 5 years)**
-      double averageRainfall = rainfallValues.reduce((a, b) => a + b) / rainfallValues.length;
-      return averageRainfall;
+      // Find column index
+      int monthIndex = sheet.rows.first.indexWhere(
+              (cell) => cell?.value.toString().trim().toLowerCase() == currentMonth
+      );
 
+      if (monthIndex == -1) throw Exception("Current month data not found!");
+
+      // Fetch average rainfall
+      double avgRainfall = sheet.rows[1][monthIndex]?.value != null
+          ? double.tryParse(sheet.rows[1][monthIndex]!.value.toString()) ?? 0.0
+          : 0.0;
+
+      print("Fetched Rainfall Data: $avgRainfall mm");
+      return avgRainfall;
     } catch (e) {
       print("Error reading Excel file: $e");
-      return null;
+      throw Exception("Failed to fetch rainfall data for $district");
     }
   }
 }

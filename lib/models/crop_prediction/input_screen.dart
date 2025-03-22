@@ -1,131 +1,245 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:seed/models/crop_prediction/result.dart';
 import 'ExcelService.dart';
+import 'esp_service.dart';
 
 class InputScreen extends StatefulWidget {
+  final double landArea;
+  final String district;
+  final String observatory;
+  final int samples;
+
+  const InputScreen({
+    required this.landArea,
+    required this.district,
+    required this.observatory,
+    required this.samples,
+  });
+
   @override
   _InputScreenState createState() => _InputScreenState();
 }
 
 class _InputScreenState extends State<InputScreen> {
-  final TextEditingController _landSizeController = TextEditingController();
-  final TextEditingController _testSamplesController = TextEditingController();
+  bool isLoading = false;
+  double? rainfallData;
+  int currentSample = 0;
+  List<Map<String, double>> collectedSamples = [];
 
-  String? selectedDistrict;
-  String? selectedObservatory;
-  double? rainfall;
+  @override
+  void initState() {
+    super.initState();
+    _fetchRainfallData();
+  }
 
-  final List<String> districts = [
-    'Thiruvananthapuram', 'Kollam', 'Pathanamthitta', 'Alappuzha', 'Kottayam', 'Idukki',
-    'Ernakulam', 'Thrissur', 'Palakkad', 'Malappuram', 'Kozhikode', 'Wayanad', 'Kannur', 'Kasargod'
-  ];
-
-  final Map<String, List<String>> observatories = {
-    'Thiruvananthapuram': ['Neyyattinkara', 'Thiruvananthapur AP (OBSY)', 'Thiruvananthapur (OBSY)', 'Varkala'],
-    'Kollam': ['Aryankavu', 'Kollam (RLY)', 'Punalur (OBSY)'],
-    'Pathanamthitta': ['Konni', 'Kurudamannil'],
-    'Alappuzha': ['Alappuzha', 'Cherthala', 'Haripad', 'Kayamkulam (Agro)', 'Kayamkulam (RARS)', 'Mancompu', 'Mavelikara'],
-    'Kottayam': ['Kanjirappally', 'Kottayam (RRII) (OBSY)', 'Kozha', 'Kumarakom', 'Vaikom'],
-    'Idukki': ['Idukki', 'Munnar (KSEB)', 'Myladumpara Agri', 'Peermade(TO)', 'Thodupuzha'],
-    'Ernakulam': ['Alwaye PWD', 'CIAL Kochi (OBSY)', 'Ernakulam', 'NAS Kochi (OBSY)', 'Perumpavur', 'Piravam'],
-    'Thrissur': ['Chalakudi', 'Enamakal', 'Irinjalakuda', 'Kodungallur', 'Kunnamkulam', 'Vadakkancherry', 'Vellanikkarai (OBSY)'],
-    'Palakkad': ['Alathur (Hydro)', 'Chittur', 'Kollengode', 'Mannarkad', 'Ottapalam', 'Palakkad (OBSY)', 'Parambikulam', 'Pattambi (Agro)', 'Trithala'],
-    'Malappuram': ['Angadipuram', 'Karipur AP (OBSY)', 'Manjeri', 'Nilambur', 'Perinthalamanna', 'Ponnani'],
-    'Kozhikode': ['Kozhikode (OBSY)', 'Quilandi', 'Vadakara'],
-    'Wayanad': ['Ambalavayal', 'Kuppadi', 'Mananthavady', 'Vythiri'],
-    'Kannur': ['Irikkur', 'Kannur (OBSY)', 'Mahe', 'Taliparamba', 'Thalasserry'],
-    'Kasargod': ['Hosdurg', 'Kudulu']
-  };
-
-  void _fetchRainfallData() async {
-    if (selectedDistrict == null || selectedObservatory == null) {
-      return;
+  Future<void> _fetchRainfallData() async {
+    try {
+      double rainfall = await ExcelService.getCurrentMonthRainfall(widget.district);
+      setState(() {
+        rainfallData = rainfall;
+      });
+    } catch (e) {
+      print("Error fetching rainfall: $e");
+      setState(() {
+        rainfallData = null;
+      });
     }
+  }
 
-    double? avgRainfall = await ExcelService.getRainfallAverage(selectedDistrict!, selectedObservatory!);
+  Future<void> _fetchSampleData() async {
+    if (currentSample >= widget.samples) return;
+    if (rainfallData == null) return;
+
+    setState(() => isLoading = true);
+
+    try {
+      Map<String, dynamic> sensorData = await ESPService.getSensorData();
+
+      setState(() {
+        collectedSamples.add({
+          "moisture": sensorData["moisture"]?.toDouble() ?? 0.0,
+          "temperature": sensorData["temperature"]?.toDouble() ?? 0.0,
+          "pH": sensorData["pH"]?.toDouble() ?? 0.0,
+          "nitrogen": sensorData["nitrogen"]?.toDouble() ?? 0.0,
+          "phosphorus": sensorData["phosphorus"]?.toDouble() ?? 0.0,
+          "potassium": sensorData["potassium"]?.toDouble() ?? 0.0,
+          "rainfall": rainfallData ?? 0.0,
+        });
+        currentSample++;
+      });
+    } catch (e) {
+      print("Error fetching ESP32 data: $e");
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  void _restartProcess() {
     setState(() {
-      rainfall = avgRainfall;
+      isLoading = false;
+      rainfallData = null;
+      currentSample = 0;
+      collectedSamples.clear();
+      _fetchRainfallData();
     });
+  }
+
+  void _navigateToResultScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ResultScreen(samples: collectedSamples),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Test Input Details')),
+      backgroundColor: Colors.grey[200],
+      appBar: AppBar(
+        title: const Text("Soil Sample Collection"),
+        backgroundColor: Colors.teal,
+        elevation: 2,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              controller: _landSizeController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Enter land size (in acres)',
-                border: OutlineInputBorder(),
+            // District & Land Info
+            Card(
+              color: Colors.white,
+              elevation: 3,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Container(
+                width: double.infinity, // Full width
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("🌍 District: ${widget.district}",
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text("📍 Observatory: ${widget.observatory}",
+                        style: const TextStyle(fontSize: 16)),
+                    Text("🏡 Land Area: ${widget.landArea} acres",
+                        style: const TextStyle(fontSize: 16)),
+                    Text("🧪 Total Samples: ${widget.samples}",
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 15),
 
-            DropdownButtonFormField<String>(
-              value: selectedDistrict,
-              hint: const Text('Select District'),
-              items: districts.map((district) {
-                return DropdownMenuItem(
-                  value: district,
-                  child: Text(district),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  selectedDistrict = value;
-                  selectedObservatory = null; // Reset observatory selection
-                });
-              },
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 15),
+            const SizedBox(height: 10),
 
-            DropdownButtonFormField<String>(
-              value: selectedObservatory,
-              hint: const Text('Select Observatory'),
-              items: (selectedDistrict != null)
-                  ? observatories[selectedDistrict!]!.map((obs) {
-                return DropdownMenuItem(
-                  value: obs,
-                  child: Text(obs),
-                );
-              }).toList()
-                  : [],
-              onChanged: (value) {
-                setState(() {
-                  selectedObservatory = value;
-                });
-              },
-              decoration: const InputDecoration(border: OutlineInputBorder()),
+            // Progress Bar
+            LinearProgressIndicator(
+              value: currentSample / widget.samples,
+              backgroundColor: Colors.grey[300],
+              color: Colors.teal,
+              minHeight: 8,
             ),
-            const SizedBox(height: 15),
 
-            TextField(
-              controller: _testSamplesController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Number of test samples',
-                border: OutlineInputBorder(),
-              ),
-            ),
             const SizedBox(height: 20),
 
-            ElevatedButton(
-              onPressed: _fetchRainfallData,
-              child: const Text('Get Rainfall Data'),
+            // Sample List
+            Expanded(
+              child: ListView.builder(
+                itemCount: collectedSamples.length,
+                itemBuilder: (context, index) {
+                  var sample = collectedSamples[index];
+
+                  return Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    margin: const EdgeInsets.symmetric(vertical: 5),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Sample Details
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("SAMPLE ${index + 1}",
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                                Text("💧 Moisture: ${sample["moisture"]!.toStringAsFixed(2)}%"),
+                                Text("🌡️ Temperature: ${sample["temperature"]!.toStringAsFixed(2)}°C"),
+                                Text("🔬 pH: ${sample["pH"]!.toStringAsFixed(2)}"),
+                                Text("🟡 Nitrogen (N): ${sample["nitrogen"]!.toStringAsFixed(2)}"),
+                                Text("🟣 Phosphorus (P): ${sample["phosphorus"]!.toStringAsFixed(2)}"),
+                                Text("🟠 Potassium (K): ${sample["potassium"]!.toStringAsFixed(2)}"),
+                                Text("🌧️ Rainfall: ${sample["rainfall"]!.toStringAsFixed(2)} mm"),
+                              ],
+                            ),
+                          ),
+
+                          // Delete Button
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {
+                              setState(() {
+                                collectedSamples.removeAt(index);
+                                currentSample--; // Allows retaking the sample
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
+
             const SizedBox(height: 20),
 
-            if (rainfall != null)
-              Text(
-                'Average Rainfall for this month: ${rainfall!.toStringAsFixed(2)} mm',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
+            // Bottom Buttons in a Single Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Take Sample / Proceed Button (Dynamic)
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: isLoading
+                        ? null
+                        : (currentSample == widget.samples)
+                        ? _navigateToResultScreen
+                        : _fetchSampleData,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    icon: isLoading
+                        ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
+                        : (currentSample == widget.samples)
+                        ? const Icon(Icons.arrow_forward, color: Colors.white)
+                        : const Icon(Icons.add, color: Colors.white),
+                    label: isLoading
+                        ? const Text("")
+                        : (currentSample == widget.samples)
+                        ? const Text("Proceed", style: TextStyle(color: Colors.white, fontSize: 18))
+                        : const Text("Take Sample", style: TextStyle(color: Colors.white, fontSize: 18)),
+                  ),
+                ),
+
+                const SizedBox(width: 10),
+
+                // Restart Button (Only Icon)
+                IconButton(
+                  icon: const Icon(Icons.restart_alt, color: Colors.red, size: 32),
+                  onPressed: _restartProcess,
+                ),
+              ],
+            ),
           ],
         ),
       ),

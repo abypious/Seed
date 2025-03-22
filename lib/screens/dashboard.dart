@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:seed/models/crop_prediction/input_screen.dart';
+import '../models/crop_prediction/TestInfoScreen.dart';
 import '../pest/pest.dart';
 import 'functions/ai_assistant_screen.dart';
 import 'functions/cropAtlas.dart';
@@ -46,7 +46,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _onItemTapped(int index) {
     setState(() => _selectedIndex = index);
   }
-
+  final List<Widget> _screens = [
+    const WeatherOutlookScreen(),
+    TestInfoScreen(),
+    const IrrigationScreen(),
+    const FertilizerRecommendationScreen(),
+    const AtlasMap(),
+  ];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,6 +65,53 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: Stack(
         children: [
           _screens[_selectedIndex],
+          if (_selectedIndex == 0)
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 16, bottom: 90),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    AnimatedOpacity(
+                      duration: const Duration(milliseconds: 1000),
+                      opacity: _opacity,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFC8E6C9),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(8),
+                            topRight: Radius.circular(8),
+                            bottomLeft: Radius.circular(8),
+                            bottomRight: Radius.circular(0),
+                          ),
+                        ),
+                        child: const Text(
+                          "What can I help you with?",
+                          style: TextStyle(color: Colors.black87, fontSize: 13),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 0),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const AIAssistantScreen()),
+                        );
+                      },
+                      child: Image.asset(
+                        'assets/images/chatbot1.png',
+                        width: 70,
+                        height: 70,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           if (_selectedIndex == 0) _buildChatbotAssistant(),
         ],
       ),

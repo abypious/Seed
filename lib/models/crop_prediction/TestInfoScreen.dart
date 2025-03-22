@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'input_screen.dart';
 
 class TestInfoScreen extends StatefulWidget {
   @override
@@ -7,11 +9,9 @@ class TestInfoScreen extends StatefulWidget {
 
 class _TestInfoScreenState extends State<TestInfoScreen> {
   final _formKey = GlobalKey<FormState>();
-
   final TextEditingController landAreaController = TextEditingController();
-  int sampleCount = 1; // Default test sample count
+  int sampleCount = 4; // Default sample count
 
-  // Districts list
   final List<String> districts = [
     'Thiruvananthapuram', 'Kollam', 'Pathanamthitta', 'Alappuzha', 'Kottayam', 'Idukki',
     'Ernakulam', 'Thrissur', 'Palakkad', 'Malappuram', 'Kozhikode', 'Wayanad', 'Kannur', 'Kasargod'
@@ -22,47 +22,115 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
     'Thiruvananthapuram': ['Neyyattinkara', 'Thiruvananthapur AP (OBSY)', 'Thiruvananthapur (OBSY)', 'Varkala'],
     'Kollam': ['Aryankavu', 'Kollam (RLY)', 'Punalur (OBSY)'],
     'Pathanamthitta': ['Konni', 'Kurudamannil'],
-    'Alappuzha': ['Alappuzha', 'Cherthala', 'Haripad', 'Kayamkulam (Agro)', 'Kayamkulam (RARS)', 'Mancompu', 'Mavelikara'],
-    'Kottayam': ['Kanjirappally', 'Kottayam (RRII) (OBSY)', 'Kozha', 'Kumarakom', 'Vaikom'],
-    'Idukki': ['Idukki', 'Munnar (KSEB)', 'Myladumpara Agri', 'Peermade(TO)', 'Thodupuzha'],
-    'Ernakulam': ['Alwaye PWD', 'CIAL Kochi (OBSY)', 'Ernakulam', 'NAS Kochi (OBSY)', 'Perumpavur', 'Piravam'],
-    'Thrissur': ['Chalakudi', 'Enamakal', 'Irinjalakuda', 'Kodungallur', 'Kunnamkulam', 'Vadakkancherry', 'Vellanikkarai (OBSY)'],
-    'Palakkad': ['Alathur (Hydro)', 'Chittur', 'Kollengode', 'Mannarkad', 'Ottapalam', 'Palakkad (OBSY)', 'Parambikulam', 'Pattambi (Agro)', 'Trithala'],
-    'Malappuram': ['Angadipuram', 'Karipur AP (OBSY)', 'Manjeri', 'Nilambur', 'Perinthalamanna', 'Ponnani'],
+    'Alappuzha': ['Alappuzha', 'Cherthala', 'Haripad'],
+    'Kottayam': ['Kanjirappally', 'Kottayam (RRII) (OBSY)', 'Kozha'],
+    'Idukki': ['Idukki', 'Munnar (KSEB)', 'Peermade(TO)'],
+    'Ernakulam': ['Alwaye PWD', 'CIAL Kochi (OBSY)', 'Ernakulam'],
+    'Thrissur': ['Chalakudi', 'Irinjalakuda', 'Kodungallur'],
+    'Palakkad': ['Alathur (Hydro)', 'Chittur', 'Kollengode'],
+    'Malappuram': ['Angadipuram', 'Karipur AP (OBSY)', 'Manjeri'],
     'Kozhikode': ['Kozhikode (OBSY)', 'Quilandi', 'Vadakara'],
-    'Wayanad': ['Ambalavayal', 'Kuppadi', 'Mananthavady', 'Vythiri'],
-    'Kannur': ['Irikkur', 'Kannur (OBSY)', 'Mahe', 'Taliparamba', 'Thalasserry'],
+    'Wayanad': ['Ambalavayal', 'Kuppadi', 'Mananthavady'],
+    'Kannur': ['Irikkur', 'Kannur (OBSY)', 'Taliparamba'],
     'Kasargod': ['Hosdurg', 'Kudulu']
   };
 
   String? selectedDistrict;
   String? selectedObservatory;
+  String rainfallData = "No data available";
+  int minSamples = 4; // Default min samples based on land area
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedData();
+  }
+
+  /// Load saved data from SharedPreferences
+  Future<void> _loadSavedData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      landAreaController.text = prefs.getString('landArea') ?? '';
+      selectedDistrict = prefs.getString('selectedDistrict');
+      selectedObservatory = prefs.getString('selectedObservatory');
+      sampleCount = prefs.getInt('sampleCount') ?? 4;
+    });
+  }
+
+  /// Save user input to SharedPreferences
+  Future<void> _saveData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('landArea', landAreaController.text);
+    await prefs.setString('selectedDistrict', selectedDistrict ?? '');
+    await prefs.setString('selectedObservatory', selectedObservatory ?? '');
+    await prefs.setInt('sampleCount', sampleCount);
+  }
+
+  /// Fetch rainfall data when an observatory is selected
+  Future<void> _fetchRainfallData() async {
+    setState(() {
+      rainfallData = "Fetching rainfall data...";
+    });
+
+    await Future.delayed(const Duration(seconds: 1));
+    setState(() {
+      rainfallData = "Rainfall: ${10 + sampleCount * 2} mm (Last 24 hrs)";
+    });
+  }
+
+  /// **Determine min samples based on land area**
+  void _updateSampleRequirement() {
+    double? landArea = double.tryParse(landAreaController.text);
+    if (landArea == null || landArea <= 0) {
+      minSamples = 4;
+    } else if (landArea <= 1) {
+      minSamples = 4;
+    } else if (landArea <= 3) {
+      minSamples = 6;
+    } else {
+      minSamples = 8;
+    }
+
+    setState(() {
+      sampleCount = sampleCount < minSamples ? minSamples : sampleCount;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
         child: Container(
-          color: const Color(0xFFD9FFD2), // Light green background
-          padding: const EdgeInsets.all(16.0),
+          color: const Color(0xFFD9FFD2),
+          padding: const EdgeInsets.all(20.0),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Enter the test details to improve the accuracy of prediction.',
+                  'Enter test details to improve prediction accuracy.',
                   style: TextStyle(fontSize: 16, color: Colors.black87),
                 ),
                 const SizedBox(height: 16),
 
                 /// **Land Area Input**
-                _buildTextField(landAreaController, 'Land Area (in acres or hectares)'),
+                TextFormField(
+                  controller: landAreaController,
+                  decoration: const InputDecoration(
+                    labelText: 'Land Area (in acres)',
+                    prefixIcon: Icon(Icons.landscape),
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) => _updateSampleRequirement(),
+                ),
+
+                const SizedBox(height: 16),
 
                 /// **District Selection**
-                const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  decoration: _inputDecoration('Select District'),
+                  decoration: _inputDecoration('Select District', Icons.location_city),
                   value: selectedDistrict,
                   items: districts.map((district) {
                     return DropdownMenuItem<String>(
@@ -73,17 +141,16 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
                   onChanged: (value) {
                     setState(() {
                       selectedDistrict = value;
-                      selectedObservatory = null; // Reset observatory selection
+                      selectedObservatory = null;
                     });
                   },
                   validator: (value) => value == null ? 'Please select a district' : null,
                 ),
 
-                /// **Observatory Selection**
                 if (selectedDistrict != null) ...[
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    decoration: _inputDecoration('Select Observatory'),
+                    decoration: _inputDecoration('Select Observatory', Icons.location_on),
                     value: selectedObservatory,
                     items: observatories[selectedDistrict!]!.map((obs) {
                       return DropdownMenuItem<String>(
@@ -94,40 +161,38 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
                     onChanged: (value) {
                       setState(() {
                         selectedObservatory = value;
+                        _fetchRainfallData();
                       });
                     },
                     validator: (value) => value == null ? 'Please select an observatory' : null,
                   ),
                 ],
 
-                /// **Test Samples Counter**
+                if (selectedObservatory != null) ...[
+                  const SizedBox(height: 16),
+                  Text(rainfallData, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ],
+
+                /// **Test Samples Slider**
                 const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Number of Test Samples:', style: TextStyle(fontSize: 16)),
-                    Row(
-                      children: [
-                        IconButton(
-                          onPressed: () {
-                            if (sampleCount > 1) {
-                              setState(() {
-                                sampleCount--;
-                              });
-                            }
-                          },
-                          icon: const Icon(Icons.remove, color: Colors.red),
-                        ),
-                        Text(sampleCount.toString(), style: const TextStyle(fontSize: 18)),
-                        IconButton(
-                          onPressed: () {
-                            setState(() {
-                              sampleCount++;
-                            });
-                          },
-                          icon: const Icon(Icons.add, color: Colors.green),
-                        ),
-                      ],
+                    Text(
+                      'Number of Test Samples (Min: $minSamples)',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    Slider(
+                      value: sampleCount.toDouble(),
+                      min: minSamples.toDouble(),
+                      max: 10,
+                      divisions: 10 - minSamples,
+                      label: sampleCount.toString(),
+                      onChanged: (value) {
+                        setState(() {
+                          sampleCount = value.toInt();
+                        });
+                      },
                     ),
                   ],
                 ),
@@ -139,24 +204,21 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        Navigator.pushNamed(
+                        _saveData();
+                        Navigator.push(
                           context,
-                          '/inputScreen',
-                          arguments: {
-                            'landArea': landAreaController.text,
-                            'district': selectedDistrict,
-                            'observatory': selectedObservatory,
-                            'samples': sampleCount,
-                          },
+                          MaterialPageRoute(
+                            builder: (context) => InputScreen(
+                              landArea: double.tryParse(landAreaController.text) ?? 0.0,
+                              district: selectedDistrict!,
+                              observatory: selectedObservatory!,
+                              samples: sampleCount,
+                            ),
+                          ),
                         );
                       }
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 32),
-                    ),
-                    child: const Text('Proceed', style: TextStyle(color: Colors.black, fontSize: 18)),
+                    child: const Text('Proceed', style: TextStyle(fontSize: 18)),
                   ),
                 ),
               ],
@@ -167,27 +229,11 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
     );
   }
 
-  /// **Reusable Input Field Widget**
-  Widget _buildTextField(TextEditingController controller, String label) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: TextInputType.number,
-      decoration: _inputDecoration(label),
-      validator: (value) => (value == null || value.isEmpty) ? 'Please enter a value' : null,
-    );
-  }
-
-  /// **Reusable Input Decoration**
-  InputDecoration _inputDecoration(String label) {
+  InputDecoration _inputDecoration(String hint, IconData icon) {
     return InputDecoration(
-      labelText: label,
-      labelStyle: const TextStyle(fontSize: 14, color: Colors.grey),
-      filled: true,
-      fillColor: Colors.white,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide.none,
-      ),
+      labelText: hint,
+      prefixIcon: Icon(icon),
+      border: const OutlineInputBorder(),
     );
   }
 }

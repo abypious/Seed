@@ -13,25 +13,23 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
   int sampleCount = 4; // Default sample count
 
   final List<String> districts = [
-    'Thiruvananthapuram', 'Kollam', 'Pathanamthitta', 'Alappuzha', 'Kottayam', 'Idukki',
-    'Ernakulam', 'Thrissur', 'Palakkad', 'Malappuram', 'Kozhikode', 'Wayanad', 'Kannur', 'Kasargod'
+    'Thiruvananthapuram', 'Kollam', 'Pathanamthitta', 'Kottayam', 'Idukki',
+    'Thrissur', 'Palakkad', 'Malappuram', 'Kozhikode', 'Wayanad', 'Kannur', 'Kasargod'
   ];
 
-  // Observatories mapped to districts
+// Observatories mapped to districts
   final Map<String, List<String>> observatories = {
-    'Thiruvananthapuram': ['Neyyattinkara', 'Thiruvananthapur AP (OBSY)', 'Thiruvananthapur (OBSY)', 'Varkala'],
-    'Kollam': ['Aryankavu', 'Kollam (RLY)', 'Punalur (OBSY)'],
+    'Thiruvananthapuram': ['Neyyattinkara', 'Thiruvananthapuram AP', 'Thiruvananthapuram', 'Varkala'],
+    'Kollam': ['Aryankavu', 'Kollam', 'Punalur'],
     'Pathanamthitta': ['Konni', 'Kurudamannil'],
-    'Alappuzha': ['Alappuzha', 'Cherthala', 'Haripad'],
-    'Kottayam': ['Kanjirappally', 'Kottayam (RRII) (OBSY)', 'Kozha'],
-    'Idukki': ['Idukki', 'Munnar (KSEB)', 'Peermade(TO)'],
-    'Ernakulam': ['Alwaye PWD', 'CIAL Kochi (OBSY)', 'Ernakulam'],
-    'Thrissur': ['Chalakudi', 'Irinjalakuda', 'Kodungallur'],
-    'Palakkad': ['Alathur (Hydro)', 'Chittur', 'Kollengode'],
-    'Malappuram': ['Angadipuram', 'Karipur AP (OBSY)', 'Manjeri'],
-    'Kozhikode': ['Kozhikode (OBSY)', 'Quilandi', 'Vadakara'],
-    'Wayanad': ['Ambalavayal', 'Kuppadi', 'Mananthavady'],
-    'Kannur': ['Irikkur', 'Kannur (OBSY)', 'Taliparamba'],
+    'Kottayam': ['Kanjirappally', 'Kottayam', 'Kozha', 'Kumarakom', 'Vaikom'],
+    'Idukki': ['Idukki', 'Munnar', 'Myladumpara Agri', 'Peermade', 'Thodupuzha'],
+    'Thrissur': ['Chalakudi', 'Enamakkal', 'Irinjalakuda', 'Kodungallur', 'Kunnakulam', 'Vadakkancherry', 'Vellanikkara'],
+    'Palakkad': ['Alathur', 'Chittur', 'Kollengode', 'Mannarkad', 'Ottapalam', 'Palakkad', 'Parambikulam', 'Pattambi', 'Trithala'],
+    'Malappuram': ['Angadipuram', 'Karipur', 'Manjeri', 'Nilambur', 'Perinthalmanna', 'Ponnani'],
+    'Kozhikode': ['Kozhikode', 'Quilandi', 'Vadakara'],
+    'Wayanad': ['Ambalavayil', 'Kuppadi', 'Mananthavady', 'Vythiri'],
+    'Kannur': ['Irikkur', 'Kannur', 'Mahe', 'Taliparamba', 'Thalassery'],
     'Kasargod': ['Hosdurg', 'Kudulu']
   };
 

@@ -16,24 +16,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
   String? selectedObservatory;
 
   final List<String> districts = [
-    'Thiruvananthapuram', 'Kollam', 'Pathanamthitta', 'Alappuzha', 'Kottayam', 'Idukki',
-    'Ernakulam', 'Thrissur', 'Palakkad', 'Malappuram', 'Kozhikode', 'Wayanad', 'Kannur', 'Kasargod'
+    'Thiruvananthapuram', 'Kollam', 'Pathanamthitta', 'Kottayam', 'Idukki',
+    'Thrissur', 'Palakkad', 'Malappuram', 'Kozhikode', 'Wayanad', 'Kannur', 'Kasargod'
   ];
 
-  Map<String, List<String>> observatories = {
-    'Thiruvananthapuram': ['Neyyattinkara', 'Thiruvananthapur AP (OBSY)', 'Thiruvananthapur (OBSY)', 'Varkala'],
-    'Kollam': ['Aryankavu', 'Kollam (RLY)', 'Punalur (OBSY)'],
+// Observatories mapped to districts
+  final Map<String, List<String>> observatories = {
+    'Thiruvananthapuram': ['Neyyattinkara', 'Thiruvananthapuram AP', 'Thiruvananthapuram', 'Varkala'],
+    'Kollam': ['Aryankavu', 'Kollam', 'Punalur'],
     'Pathanamthitta': ['Konni', 'Kurudamannil'],
-    'Alappuzha': ['Alappuzha', 'Cherthala', 'Haripad', 'Kayamkulam (Agro)', 'Kayamkulam (RARS)', 'Mancompu', 'Mavelikara'],
-    'Kottayam': ['Kanjirappally', 'Kottayam (RRII) (OBSY)', 'Kozha', 'Kumarakom', 'Vaikom'],
-    'Idukki': ['Idukki', 'Munnar (KSEB)', 'Myladumpara Agri', 'Peermade(TO)', 'Thodupuzha'],
-    'Ernakulam': ['Alwaye PWD', 'CIAL Kochi (OBSY)', 'Ernakulam', 'NAS Kochi (OBSY)', 'Perumpavur', 'Piravam'],
-    'Thrissur': ['Chalakudi', 'Enamakal', 'Irinjalakuda', 'Kodungallur', 'Kunnamkulam', 'Vadakkancherry', 'Vellanikkarai (OBSY)'],
-    'Palakkad': ['Alathur (Hydro)', 'Chittur', 'Kollengode', 'Mannarkad', 'Ottapalam', 'Palakkad (OBSY)', 'Parambikulam', 'Pattambi (Agro)', 'Trithala'],
-    'Malappuram': ['Angadipuram', 'Karipur AP (OBSY)', 'Manjeri', 'Nilambur', 'Perinthalamanna', 'Ponnani'],
-    'Kozhikode': ['Kozhikode (OBSY)', 'Quilandi', 'Vadakara'],
-    'Wayanad': ['Ambalavayal', 'Kuppadi', 'Mananthavady', 'Vythiri'],
-    'Kannur': ['Irikkur', 'Kannur (OBSY)', 'Mahe', 'Taliparamba', 'Thalasserry'],
+    'Kottayam': ['Kanjirappally', 'Kottayam', 'Kozha', 'Kumarakom', 'Vaikom'],
+    'Idukki': ['Idukki', 'Munnar', 'Myladumpara Agri', 'Peermade', 'Thodupuzha'],
+    'Thrissur': ['Chalakudi', 'Enamakkal', 'Irinjalakuda', 'Kodungallur', 'Kunnakulam', 'Vadakkancherry', 'Vellanikkara'],
+    'Palakkad': ['Alathur', 'Chittur', 'Kollengode', 'Mannarkad', 'Ottapalam', 'Palakkad', 'Parambikulam', 'Pattambi', 'Trithala'],
+    'Malappuram': ['Angadipuram', 'Karipur', 'Manjeri', 'Nilambur', 'Perinthalmanna', 'Ponnani'],
+    'Kozhikode': ['Kozhikode', 'Quilandi', 'Vadakara'],
+    'Wayanad': ['Ambalavayil', 'Kuppadi', 'Mananthavady', 'Vythiri'],
+    'Kannur': ['Irikkur', 'Kannur', 'Mahe', 'Taliparamba', 'Thalassery'],
     'Kasargod': ['Hosdurg', 'Kudulu']
   };
 

@@ -21,6 +21,8 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
   double latitude = 10.1632;
   double longitude = 76.6413;
 
+  final String geminiAPIKey = "AIzaSyCtF2iUXbWtKdk2OCeeavJXR5cjPvoo4AU";
+
   final Map<int, String> daysAgoText = {
     2: "2 Days Ago",
     3: "3 Days Ago",
@@ -28,7 +30,7 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
     14: "2 Weeks Ago"
   };
 
-  /// Fetch weather data and generate recommendation & advisor
+  //Fetch weather data and generate recommendation & advisor
   Future<void> _fetchWeatherData() async {
     if (_selectedCrop == null) {
       _showNotification("Please select a crop!", Colors.red);
@@ -40,8 +42,7 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
       _showButton = false;
     });
 
-    final url =
-        "https://api.open-meteo.com/v1/forecast?latitude=$latitude&longitude=$longitude"
+    final url = "https://api.open-meteo.com/v1/forecast?latitude=$latitude&longitude=$longitude"
         "&daily=precipitation_sum,temperature_2m_max&past_days=15&forecast_days=15"
         "&timezone=auto";
 
@@ -57,7 +58,6 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
     } catch (e) {
       setState(() {
         _recommendation = "Error fetching data!";
-        _advisor = "";
         _showButton = true;
       });
       _showNotification("Error: ${e.toString()}", Colors.red);
@@ -66,8 +66,66 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
     }
   }
 
-  /// Process fetched weather data and generate recommendation & advisor
-  void _processWeatherData(Map<String, dynamic> data) {
+  Future<void> _getIrrigationAdvice() async {
+    if (_selectedCrop == null || _selectedCrop!.isEmpty) {
+      _showNotification("Please select a crop!", Colors.red);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    const String apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+
+    try {
+      final response = await http.post(
+        Uri.parse("$apiUrl?key=$geminiAPIKey"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "contents": [
+            {
+              "role": "user",
+              "parts": [
+                {
+                  "text": """
+                Provide a irrigation advise for $_selectedCrop :
+
+                Response should include:
+                1. Crop-Specific Irrigation advises
+                2. general tips for good irrigation
+
+                Keep the response concise (30-50 words) don't use any special symbols.
+                """
+                }
+              ]
+            }
+          ]
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final advisor = data["candidates"][0]["content"]["parts"][0]["text"];
+
+        if (!mounted) return;
+        setState(() {
+          _advisor = advisor;
+          _isLoading = false;
+        });
+      } else {
+        throw Exception("Failed to fetch advise. Error: ${response.body}");
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _advisor = "Failed to get advise. Please try again.";
+        _isLoading = false;
+      });
+      _showNotification("Error: ${e.toString()}", Colors.red);
+    }
+  }
+
+//Process fetched weather data and generate recommendation & advisor
+  Future<void> _processWeatherData(Map<String, dynamic> data) async {
     List pastRainfall = data["daily"]["precipitation_sum"].sublist(0, 15);
     List futureRainfall = data["daily"]["precipitation_sum"].sublist(15);
 
@@ -87,25 +145,19 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
 
     setState(() {
       _recommendation = """
-🌧 Past Rainfall: ${pastRainfallTotal.toStringAsFixed(2)} mm  
-🌤 Predicted Rainfall: ${futureRainfallTotal.toStringAsFixed(2)} mm  
-🕒 Last Irrigation: $irrigationText  
-
-✅ Recommendation: $recommendation
-""";
-      _advisor = _getIrrigationAdvice();
+        🌧 Past Rainfall: ${pastRainfallTotal.toStringAsFixed(2)} mm  
+        🌤 Predicted Rainfall: ${futureRainfallTotal.toStringAsFixed(2)} mm  
+        🕒 Last Irrigation: $irrigationText  
+        
+        ✅ Recommendation: $recommendation
+        """;
     });
+
+    await _getIrrigationAdvice();
   }
 
-  /// Generate Irrigation Advice (Custom Function)
-  String _getIrrigationAdvice() {
-    return "💡 Based on weather patterns:\n"
-        "✔️ Ensure soil moisture levels are monitored.\n"
-        "✔️ If rain is expected, avoid overwatering.\n"
-        "✔️ Use mulch to retain soil moisture for better crop yield.";
-  }
 
-  /// Show Toast Notification
+  //Show Toast Notification
   void _showNotification(String message, Color color) {
     Fluttertoast.showToast(
       msg: message,
@@ -117,7 +169,7 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
     );
   }
 
-  /// Build Dropdown
+  //Build Dropdown
   Widget _buildDropdown<T>({
     required String label,
     required T? value,
@@ -139,7 +191,7 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
     );
   }
 
-  /// Build Information Card
+  //Build Information Card
   Widget _buildInfoCard(String content, Color? color) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -158,65 +210,73 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        padding: const EdgeInsets.all(20.0),
-        decoration: BoxDecoration(
-          color: Colors.grey[100], // Subtle background
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Crop Selection
-            _buildDropdown<String>(
-              label: "Select Crop",
-              value: _selectedCrop,
-              hint: "Choose the crop you are growing",
-              items: ["Tomato", "Rice", "Sugarcane", "Cotton", "Carrot", "Pumpkin", "Banana"]
-                  .map((crop) => DropdownMenuItem(value: crop, child: Text(crop)))
-                  .toList(),
-              onChanged: (value) => setState(() => _selectedCrop = value),
-            ),
-            const SizedBox(height: 15),
+      body: SingleChildScrollView(
+        child: Container(
+          padding: const EdgeInsets.all(20.0),
+          decoration: BoxDecoration(
+            color: Colors.grey[100], // Subtle background
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Crop Selection
+              _buildDropdown<String>(
+                label: "Select Crop",
+                value: _selectedCrop,
+                hint: "Choose the crop you are growing",
+                items: [
+                  "Tomato", "Watermelon", "Tapioca", "Sweet Potato", "Sunflower",
+                  "Sugarcane", "Spinach", "Soybean", "Rice", "Pumpkin", "Peanut",
+                  "Okra", "Mustard Greens", "Muskmelon", "MungBeans", "Maize",
+                  "Lentil", "KidneyBeans", "Ginger", "Garlic", "Cucumber", "Cotton",
+                  "Chilli", "Cauliflower", "Carrot", "Cabbage", "Brinjal", "Banana"
+                ]
+                    .map((crop) => DropdownMenuItem(value: crop, child: Text(crop)))
+                    .toList(),
+                onChanged: (value) => setState(() => _selectedCrop = value),
+              ),
+              const SizedBox(height: 15),
 
-            // Last Irrigation Selection
-            _buildDropdown<int>(
-              label: "Last Irrigation",
-              value: _selectedDaysAgo,
-              hint: "Select the last irrigation time",
-              items: daysAgoText.entries
-                  .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
-                  .toList(),
-              onChanged: (value) => setState(() => _selectedDaysAgo = value!),
-            ),
-            const SizedBox(height: 20),
+              // Last Irrigation Selection
+              _buildDropdown<int>(
+                label: "Last Irrigation",
+                value: _selectedDaysAgo,
+                hint: "Select the last irrigation time",
+                items: daysAgoText.entries
+                    .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
+                    .toList(),
+                onChanged: (value) => setState(() => _selectedDaysAgo = value!),
+              ),
+              const SizedBox(height: 20),
 
-            // Fetch Button
-            if (_showButton)
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _fetchWeatherData,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    backgroundColor: Colors.blue,
+              // Fetch Button
+              if (_showButton)
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _fetchWeatherData,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      backgroundColor: Colors.blue,
+                    ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text("Get Irrigation Plan", style: TextStyle(fontSize: 16)),
                   ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Get Irrigation Plan", style: TextStyle(fontSize: 16)),
                 ),
-              ),
 
-            // Recommendation & Advisor Cards
-            if (_recommendation.isNotEmpty)
-              Column(
-                children: [
-                  _buildInfoCard(_recommendation, Colors.lightBlue[50]),
-                  const SizedBox(height: 15),
-                  _buildInfoCard(_advisor, Colors.green[50]),
-                ],
-              ),
-          ],
+              // Recommendation & Advisor Cards
+              if (_recommendation.isNotEmpty)
+                Column(
+                  children: [
+                    _buildInfoCard(_recommendation, Colors.lightBlue[50]),
+                    const SizedBox(height: 15),
+                    _buildInfoCard(_advisor, Colors.green[50]),
+                  ],
+                ),
+            ],
+          ),
         ),
       ),
     );

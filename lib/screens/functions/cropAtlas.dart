@@ -44,10 +44,6 @@ class AtlasMapState extends State<AtlasMap> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Crop Atlas'),
-        automaticallyImplyLeading: false,
-      ),
       body: Stack(
         children: [
           Column(
@@ -97,7 +93,7 @@ class AtlasMapState extends State<AtlasMap> {
 
   Widget _buildLegendBox() {
     if (currentDistrict == null) {
-      return const SizedBox(); // Return an empty widget if no district is selected
+      return const SizedBox();
     }
 
     return Positioned(

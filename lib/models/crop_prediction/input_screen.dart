@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:seed/models/crop_prediction/result.dart';
 import 'ExcelService.dart';
 import 'esp_service.dart';
@@ -26,11 +28,24 @@ class _InputScreenState extends State<InputScreen> {
   double? rainfallData;
   int currentSample = 0;
   List<Map<String, double>> collectedSamples = [];
+  String espIp = "172.16.21.30";
 
   @override
   void initState() {
     super.initState();
     _fetchRainfallData();
+    _checkESPConnection();
+  }
+
+  Future<void> _checkESPConnection() async {
+    try {
+      final result = await InternetAddress.lookup(espIp);
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        _showNotification("ESP32 is connected!", Colors.green);
+      }
+    } catch (e) {
+      _showNotification("ESP32 is NOT connected!", Colors.red);
+    }
   }
 
   Future<void> _fetchRainfallData() async {
@@ -39,8 +54,9 @@ class _InputScreenState extends State<InputScreen> {
       setState(() {
         rainfallData = rainfall;
       });
+      _showNotification("Rainfall data fetched successfully!", Colors.green);
     } catch (e) {
-      print("Error fetching rainfall: $e");
+      _showNotification("Error fetching rainfall data!", Colors.red);
       setState(() {
         rainfallData = null;
       });
@@ -56,6 +72,8 @@ class _InputScreenState extends State<InputScreen> {
     try {
       Map<String, dynamic> sensorData = await ESPService.getSensorData();
 
+      if (!mounted) return;
+
       setState(() {
         collectedSamples.add({
           "moisture": sensorData["moisture"]?.toDouble() ?? 0.0,
@@ -68,11 +86,34 @@ class _InputScreenState extends State<InputScreen> {
         });
         currentSample++;
       });
+
+      _showNotification("Sample ${currentSample} collected!", Colors.green);
     } catch (e) {
-      print("Error fetching ESP32 data: $e");
+      _showNotification("Error fetching ESP32 data!", Colors.red);
     } finally {
-      setState(() => isLoading = false);
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
+  }
+
+  void _deleteSample(int index) {
+    setState(() {
+      collectedSamples.removeAt(index);
+      currentSample--;
+    });
+    _showNotification("Sample ${index + 1} deleted!", Colors.orange);
+  }
+
+  void _showNotification(String message, Color color) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.TOP,
+      backgroundColor: color,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
   }
 
   void _restartProcess() {
@@ -82,6 +123,7 @@ class _InputScreenState extends State<InputScreen> {
       currentSample = 0;
       collectedSamples.clear();
       _fetchRainfallData();
+      _checkESPConnection();
     });
   }
 
@@ -107,43 +149,34 @@ class _InputScreenState extends State<InputScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // District & Land Info
             Card(
               color: Colors.white,
               elevation: 3,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: Container(
-                width: double.infinity, // Full width
+                width: double.infinity,
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("🌍 District: ${widget.district}",
+                    Text("District: ${widget.district}",
                         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    Text("📍 Observatory: ${widget.observatory}",
-                        style: const TextStyle(fontSize: 16)),
-                    Text("🏡 Land Area: ${widget.landArea} acres",
-                        style: const TextStyle(fontSize: 16)),
-                    Text("🧪 Total Samples: ${widget.samples}",
+                    Text("Observatory: ${widget.observatory}", style: const TextStyle(fontSize: 16)),
+                    Text("Land Area: ${widget.landArea} acres", style: const TextStyle(fontSize: 16)),
+                    Text("Total Samples: ${widget.samples}",
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
             ),
-
             const SizedBox(height: 10),
-
-            // Progress Bar
             LinearProgressIndicator(
               value: currentSample / widget.samples,
               backgroundColor: Colors.grey[300],
               color: Colors.teal,
               minHeight: 8,
             ),
-
             const SizedBox(height: 20),
-
-            // Sample List
             Expanded(
               child: ListView.builder(
                 itemCount: collectedSamples.length,
@@ -159,33 +192,25 @@ class _InputScreenState extends State<InputScreen> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Sample Details
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text("SAMPLE ${index + 1}",
                                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                                Text("💧 Moisture: ${sample["moisture"]!.toStringAsFixed(2)}%"),
-                                Text("🌡️ Temperature: ${sample["temperature"]!.toStringAsFixed(2)}°C"),
-                                Text("🔬 pH: ${sample["pH"]!.toStringAsFixed(2)}"),
-                                Text("🟡 Nitrogen (N): ${sample["nitrogen"]!.toStringAsFixed(2)}"),
-                                Text("🟣 Phosphorus (P): ${sample["phosphorus"]!.toStringAsFixed(2)}"),
-                                Text("🟠 Potassium (K): ${sample["potassium"]!.toStringAsFixed(2)}"),
-                                Text("🌧️ Rainfall: ${sample["rainfall"]!.toStringAsFixed(2)} mm"),
+                                Text("Moisture: ${sample["moisture"]!.toStringAsFixed(2)}%"),
+                                Text("Temperature: ${sample["temperature"]!.toStringAsFixed(2)}°C"),
+                                Text("pH: ${sample["pH"]!.toStringAsFixed(2)}"),
+                                Text("Nitrogen (N): ${sample["nitrogen"]!.toStringAsFixed(2)}"),
+                                Text("Phosphorus (P): ${sample["phosphorus"]!.toStringAsFixed(2)}"),
+                                Text("Potassium (K): ${sample["potassium"]!.toStringAsFixed(2)}"),
+                                Text("Rainfall: ${sample["rainfall"]!.toStringAsFixed(2)} mm"),
                               ],
                             ),
                           ),
-
-                          // Delete Button
                           IconButton(
                             icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () {
-                              setState(() {
-                                collectedSamples.removeAt(index);
-                                currentSample--; // Allows retaking the sample
-                              });
-                            },
+                            onPressed: () => _deleteSample(index),
                           ),
                         ],
                       ),
@@ -194,42 +219,24 @@ class _InputScreenState extends State<InputScreen> {
                 },
               ),
             ),
-
             const SizedBox(height: 20),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: isLoading
-                        ? null
-                        : (currentSample == widget.samples)
-                        ? _navigateToResultScreen
-                        : _fetchSampleData,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    icon: isLoading
-                        ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                    )
-                        : (currentSample == widget.samples)
-                        ? const Icon(Icons.arrow_forward, color: Colors.white)
-                        : const Icon(Icons.add, color: Colors.white),
-                    label: isLoading
-                        ? const Text("")
-                        : (currentSample == widget.samples)
-                        ? const Text("Proceed", style: TextStyle(color: Colors.white, fontSize: 18))
-                        : const Text("Take Sample", style: TextStyle(color: Colors.white, fontSize: 18)),
+                ElevatedButton.icon(
+                  onPressed: isLoading
+                      ? null
+                      : (currentSample >= widget.samples ? _navigateToResultScreen : _fetchSampleData),
+                  icon: Icon(
+                    currentSample >= widget.samples ? Icons.arrow_forward : Icons.add,
+                    color: Colors.white,
                   ),
+                  label: Text(
+                    currentSample >= widget.samples ? "Proceed" : "Take Sample",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
                 ),
-
-                const SizedBox(width: 10),
                 IconButton(
                   icon: const Icon(Icons.restart_alt, color: Colors.red, size: 32),
                   onPressed: _restartProcess,

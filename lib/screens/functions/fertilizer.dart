@@ -1,94 +1,194 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../../models/crop_prediction/esp_service.dart';
 
 class FertilizerRecommendationScreen extends StatefulWidget {
   const FertilizerRecommendationScreen({super.key});
 
   @override
-  _FertilizerRecommendationScreenState createState() => _FertilizerRecommendationScreenState();
+  _FertilizerRecommendationScreenState createState() =>
+      _FertilizerRecommendationScreenState();
 }
 
-class _FertilizerRecommendationScreenState extends State<FertilizerRecommendationScreen> {
+class _FertilizerRecommendationScreenState
+    extends State<FertilizerRecommendationScreen> {
   final TextEditingController _phController = TextEditingController();
   final TextEditingController _nitrogenController = TextEditingController();
   final TextEditingController _phosphorusController = TextEditingController();
   final TextEditingController _potassiumController = TextEditingController();
-  String _selectedCrop = "Wheat"; // Default crop
+
+  final String geminiAPIKey = "AIzaSyCtF2iUXbWtKdk2OCeeavJXR5cjPvoo4AU";
+
+  String? _selectedCrop;
   String _recommendation = "";
+  bool _isLoading = false;
+  bool _dataFetched = false;
+  String espIp = "172.16.21.30";
 
-  void _getFertilizerRecommendation() {
-    double ph = double.tryParse(_phController.text) ?? 0.0;
-    int nitrogen = int.tryParse(_nitrogenController.text) ?? 0;
-    int phosphorus = int.tryParse(_phosphorusController.text) ?? 0;
-    int potassium = int.tryParse(_potassiumController.text) ?? 0;
+  @override
+  void initState() {
+    super.initState();
+    _checkESPConnection();
+  }
 
-    // Simple recommendation logic (can be replaced with AI/ML model)
-    if (ph < 5.5) {
-      _recommendation = "Add Lime to increase soil pH.";
-    } else if (ph > 7.5) {
-      _recommendation = "Add Sulfur to lower soil pH.";
-    } else if (nitrogen < 50) {
-      _recommendation = "Use Urea or Ammonium Nitrate for nitrogen boost.";
-    } else if (phosphorus < 30) {
-      _recommendation = "Apply Single Super Phosphate (SSP).";
-    } else if (potassium < 30) {
-      _recommendation = "Use Muriate of Potash (MOP) for potassium boost.";
-    } else {
-      _recommendation = "Your soil is well-balanced. Maintain regular composting!";
+  Future<void> _checkESPConnection() async {
+    try {
+      final result = await InternetAddress.lookup(espIp);
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        _showNotification("ESP32 is connected!", Colors.green);
+      }
+    } catch (e) {
+      _showNotification("ESP32 is NOT connected!", Colors.red);
+    }
+  }
+
+  void _showNotification(String message, Color color) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.TOP,
+      backgroundColor: color,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
+  }
+
+  Future<void> _fetchDataFromESP() async {
+    setState(() => _isLoading = true);
+
+    final data = await ESPService.getSensorData();
+    if (!mounted) return;
+    setState(() {
+      _phController.text = data["pH"].toString();
+      _nitrogenController.text = data["nitrogen"].toString();
+      _phosphorusController.text = data["phosphorus"].toString();
+      _potassiumController.text = data["potassium"].toString();
+      _dataFetched = true;
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _getFertilizerRecommendation() async {
+    if (_selectedCrop == null || _selectedCrop!.isEmpty) {
+      _showNotification("Please select a crop!", Colors.red);
+      return;
     }
 
-    setState(() {});
+    setState(() => _isLoading = true);
+
+    const String apiUrl =
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+
+    try {
+      final response = await http.post(
+        Uri.parse("$apiUrl?key=$geminiAPIKey"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "contents": [
+            {
+              "role": "user",
+              "parts": [
+                {
+                  "text": """
+                Provide a fertilizer recommendation for $_selectedCrop based on:
+                - pH: ${_phController.text}
+                - Nitrogen: ${_nitrogenController.text} mg/kg
+                - Phosphorus: ${_phosphorusController.text} mg/kg
+                - Potassium: ${_potassiumController.text} mg/kg
+
+                Response should include:
+                1. Analysis: Mention if nitrogen, phosphorus, and potassium levels are normal, high, or low.
+                2. Recommended Fertilizers: Suggest specific fertilizers (Urea, DAP, Potash) with exact amounts in kg per acre.
+                3. Duration: Mention how often to apply each fertilizer (e.g., weekly, monthly).
+                4. Application: Briefly describe how to apply for best absorption.
+
+                Keep the response concise (30-50 words) without special symbols.
+                """
+                }
+              ]
+            }
+          ]
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final recommendation = data["candidates"][0]["content"]["parts"][0]["text"];
+
+        if (!mounted) return;
+        setState(() {
+          _recommendation = recommendation;
+          _isLoading = false;
+        });
+      } else {
+        throw Exception("Failed to fetch recommendation. Error: ${response.body}");
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _recommendation = "Failed to get recommendation. Please try again.";
+        _isLoading = false;
+      });
+      _showNotification("Error: ${e.toString()}", Colors.red);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTextField("Soil pH", _phController),
-            _buildTextField("Nitrogen (mg/kg)", _nitrogenController),
-            _buildTextField("Phosphorus (mg/kg)", _phosphorusController),
-            _buildTextField("Potassium (mg/kg)", _potassiumController),
+            _buildTextField("Soil pH", _phController, Icons.science),
+            _buildTextField("Nitrogen (mg/kg)", _nitrogenController, Icons.thermostat),
+            _buildTextField("Phosphorus (mg/kg)", _phosphorusController, Icons.grass),
+            _buildTextField("Potassium (mg/kg)", _potassiumController, Icons.local_florist),
 
-            // Crop Type Dropdown
             const SizedBox(height: 10),
             const Text("Select Crop:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+
             DropdownButton<String>(
               value: _selectedCrop,
               isExpanded: true,
-              items: ["Wheat", "Rice", "Maize", "Soybean", "Potato"]
+              hint: const Text("Select Your Crop"),
+              items: [
+                "Tomato", "Watermelon", "Tapioca", "Sweet Potato", "Sunflower",
+                "Sugarcane", "Spinach", "Soybean", "Rice", "Pumpkin", "Peanut",
+                "Okra", "Mustard Greens", "Muskmelon", "MungBeans", "Maize",
+                "Lentil", "KidneyBeans", "Ginger", "Garlic", "Cucumber", "Cotton",
+                "Chilli", "Cauliflower", "Carrot", "Cabbage", "Brinjal", "Banana"
+              ]
                   .map((crop) => DropdownMenuItem(value: crop, child: Text(crop)))
                   .toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedCrop = value!;
-                });
-              },
+              onChanged: (value) => setState(() => _selectedCrop = value!),
             ),
 
             const SizedBox(height: 20),
 
-            // Recommendation Button
-            Center(
-              child: ElevatedButton(
-                onPressed: _getFertilizerRecommendation,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                child: const Text("Get Recommendation"),
+            ElevatedButton.icon(
+              onPressed: _dataFetched ? _getFertilizerRecommendation : _fetchDataFromESP,
+              icon: Icon(_dataFetched ? Icons.recommend : Icons.download, color: Colors.white),
+              label: Text(_dataFetched ? "Get AI Recommendation" : "Fetch Data"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _dataFetched ? Colors.green : Colors.grey,
+                minimumSize: const Size(double.infinity, 50),
+                textStyle: const TextStyle(fontSize: 18),
               ),
             ),
 
             const SizedBox(height: 20),
-
-            // Display Recommendation
             if (_recommendation.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: Colors.lightGreen[100], borderRadius: BorderRadius.circular(8)),
-                child: Text(
-                  "Recommendation: $_recommendation",
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              Card(
+                color: Colors.lightGreen[100],
+                elevation: 5,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(_recommendation, style: const TextStyle(fontSize: 16)),
                 ),
               ),
           ],
@@ -97,8 +197,7 @@ class _FertilizerRecommendationScreenState extends State<FertilizerRecommendatio
     );
   }
 
-  // Text Field Helper
-  Widget _buildTextField(String label, TextEditingController controller) {
+  Widget _buildTextField(String label, TextEditingController controller, IconData icon) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: TextField(
@@ -106,7 +205,8 @@ class _FertilizerRecommendationScreenState extends State<FertilizerRecommendatio
         keyboardType: TextInputType.number,
         decoration: InputDecoration(
           labelText: label,
-          border: const OutlineInputBorder(),
+          prefixIcon: Icon(icon, color: Colors.green),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         ),
       ),
     );

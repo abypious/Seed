@@ -66,17 +66,6 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
     await prefs.setInt('sampleCount', sampleCount);
   }
 
-  // Fetch rainfall data when an observatory is selected
-  Future<void> _fetchRainfallData() async {
-    setState(() {
-      rainfallData = "Fetching rainfall data...";
-    });
-
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() {
-      rainfallData = "Rainfall: ${10 + sampleCount * 2} mm (Last 24 hrs)";
-    });
-  }
 
   // Determine min samples based on land area
   void _updateSampleRequirement() {
@@ -158,7 +147,6 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
                     onChanged: (value) {
                       setState(() {
                         selectedObservatory = value;
-                        _fetchRainfallData();
                       });
                     },
                     validator: (value) => value == null ? 'Please select an observatory' : null,

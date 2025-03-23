@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:seed/screens/auth/signup.dart';
 import 'auth/login.dart';
 import 'dashboard.dart';
 
@@ -21,19 +22,9 @@ class HomeScreen extends StatelessWidget {
                   style: TextStyle(color: Colors.white, fontSize: 24),
                 ),
               ),
-              ListTile(
 
-                leading: const Icon(Icons.dashboard),
-                title: const Text('Dashboard'),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const DashboardScreen()),
-                  );
-                },
-              ),
               ListTile(
-                leading: const Icon(Icons.login),
+                leading: const Icon(Icons.login_outlined),
                 title: const Text('Login'),
                 onTap: () {
                   Navigator.push(
@@ -43,10 +34,21 @@ class HomeScreen extends StatelessWidget {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.logout),
+                leading: const Icon(Icons.logout_outlined),
                 title: const Text('Logout'),
                 onTap: () {
                   // Add logout functionality
+                },
+              ),
+              ListTile(
+
+                leading: const Icon(Icons.settings_outlined),
+                title: const Text('Settings'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const DashboardScreen()),
+                  );
                 },
               ),
             ],
@@ -87,15 +89,15 @@ class HomeScreen extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => DashboardScreen()),
+                        MaterialPageRoute(builder: (context) => SignUpScreen()),
                       );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
-                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 12),
                     ),
                     child: const Text(
-                      "Dashboard",
+                      "Signup",
                       style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
                   ),

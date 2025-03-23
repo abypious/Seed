@@ -57,3 +57,5 @@ flutter:
      - assets/lottie/
      - assets/atlas/
      - assets/rain_data/
+     - assets/atlas/cleaned_map.svg
+     - assets/atlas/bagmati_provience.svg

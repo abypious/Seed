@@ -24,7 +24,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     TestInfoScreen(),
     const IrrigationScreen(),
     const FertilizerRecommendationScreen(),
-    const AtlasMap(),
+    AtlasMap(),
   ];
 
   @override
@@ -75,7 +75,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           FloatingActionButton(
             backgroundColor: Colors.green,
             onPressed: () {
-              Navigator.pop(context);
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => PlantDiseaseScreen()),
@@ -186,11 +185,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const AtlasMap()),
+                      MaterialPageRoute(builder: (context) =>  AtlasMap()),
                     );
                   },
                   child: const Text("Go to Atlas", style: TextStyle(color: Colors.white)),
-                ),
+                )
               ),
             ],
           ),

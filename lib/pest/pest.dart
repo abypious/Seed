@@ -89,10 +89,6 @@ class _PlantDiseaseScreenState extends State<PlantDiseaseScreen> {
   }
 
 
-
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -68,6 +68,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
       });
     }
   }
+
   Future<String> _fetchGeminiResponse(String prompt) async {
     const String apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 

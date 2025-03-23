@@ -55,7 +55,8 @@ flutter:
      - assets/images/
      - assets/weather/
      - assets/images/
-     - assets/crop_predict/
+     - assets/crop_predict/crop_images/
      - assets/lottie/
      - assets/atlas/
      - assets/rain_data/
+     - assets/crop_predict/ensemble_model.tflite

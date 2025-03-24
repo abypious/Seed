@@ -4,7 +4,7 @@ import 'package:lottie/lottie.dart';
 import 'package:seed/screens/profile.dart';
 import '../components/loading.dart';
 import '../models/crop_prediction/TestInfoScreen.dart';
-import '../pest/pest.dart';
+import 'functions/pest.dart';
 import 'functions/ai_assistant_screen.dart';
 import 'functions/cropAtlas.dart';
 import 'functions/fertilizer.dart';

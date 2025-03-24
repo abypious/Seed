@@ -31,6 +31,8 @@ dependencies:
   image_picker: ^1.1.2
   google_fonts: ^6.2.1
   excel: ^4.0.6
+  fluttertoast: ^8.2.12
+  dart_ping: ^9.0.1
 
 dev_dependencies:
   flutter_test:
@@ -53,9 +55,9 @@ flutter:
      - assets/images/
      - assets/weather/
      - assets/images/
-     - assets/crop_predict/
+     - assets/crop_predict/crop_images/
      - assets/lottie/
      - assets/atlas/
      - assets/rain_data/
-     - assets/atlas/cleaned_map.svg
-     - assets/atlas/bagmati_provience.svg
+     - assets/crop_predict/ensemble_model.tflite
+

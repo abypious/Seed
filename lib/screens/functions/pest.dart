@@ -88,7 +88,6 @@ class _PlantDiseaseScreenState extends State<PlantDiseaseScreen> {
     setState(() => _loading = false);
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -212,8 +211,6 @@ class _PlantDiseaseScreenState extends State<PlantDiseaseScreen> {
             ),
           ),
         ),
-
-
     );
   }
 }

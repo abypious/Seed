@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'predicted_crop.dart';
 class ResultScreen extends StatelessWidget {
   final List<Map<String, double>> samples;
 
@@ -48,7 +48,7 @@ class ResultScreen extends StatelessWidget {
             fontSize: 22,
           ),
         ),
-        backgroundColor: Colors.amber,
+        backgroundColor: Color(0xFF7de26d),
         centerTitle: true,
       ),
       body: Container(
@@ -98,7 +98,14 @@ class ResultScreen extends StatelessWidget {
 
             // Proceed Button
             ElevatedButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PredictedCropScreen(inputValues: computeAverages()),
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.amber,
                 padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 40),
@@ -106,10 +113,11 @@ class ResultScreen extends StatelessWidget {
                 elevation: 3,
               ),
               child: const Text(
-                'Proceed',
+                'Predict',
                 style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
+
           ],
         ),
       ),

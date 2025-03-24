@@ -60,3 +60,4 @@ flutter:
      - assets/atlas/
      - assets/rain_data/
      - assets/crop_predict/ensemble_model.tflite
+

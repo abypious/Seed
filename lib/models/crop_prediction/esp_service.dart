@@ -7,7 +7,7 @@ class ESPService {
       final response = await http.get(Uri.parse('http://172.16.21.30/data'));
 
       if (response.statusCode == 200) {
-        print("ESP32 Raw Data: ${response.body}"); // Debugging
+        print("ESP32 Raw Data: ${response.body}");
         return json.decode(response.body);
       } else {
         throw Exception("Failed to fetch sensor data from ESP32.");

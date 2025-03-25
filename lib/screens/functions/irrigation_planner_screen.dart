@@ -213,9 +213,6 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
       body: SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.all(20.0),
-          decoration: BoxDecoration(
-            color: Colors.grey[100], // Subtle background
-          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

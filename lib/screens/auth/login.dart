@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:seed/screens/auth/PhoneAuthScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
 import 'package:seed/screens/dashboard.dart';
 import 'package:seed/screens/auth/signup.dart';
 import 'package:seed/screens/auth/change_email.dart';
@@ -17,11 +17,16 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   bool _isLoadingEmail = false;
   bool _isLoadingGoogle = false;
   bool _obscurePassword = true;
+
+  // Save email to SharedPreferences
+  Future<void> _saveEmailToPrefs(String email) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_email', email);
+  }
 
   // Sign in with Email & Password
   Future<void> _signInWithEmail() async {
@@ -31,14 +36,17 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
+      print('User signed in: ${userCredential.user?.uid}');
       if (userCredential.user != null && mounted) {
+        await _saveEmailToPrefs(userCredential.user!.email!);
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => DashboardScreen()),
         );
       }
     } catch (e) {
-      _showSnackbar('Failed to sign in');
+      print('Login Error: $e'); // Debugging line
+      _showSnackbar('Failed to sign in: ${e.toString()}'); // Show error details
     } finally {
       if (mounted) setState(() => _isLoadingEmail = false);
     }
@@ -48,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoadingGoogle = true);
     try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) {
         setState(() => _isLoadingGoogle = false);
         return;
@@ -58,15 +66,16 @@ class _LoginScreenState extends State<LoginScreen> {
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-      await _auth.signInWithCredential(credential);
-      if (mounted) {
+      UserCredential userCredential = await _auth.signInWithCredential(credential);
+      if (userCredential.user != null) {
+        await _saveEmailToPrefs(userCredential.user!.email!); // Save email to preferences
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => DashboardScreen()),
         );
       }
     } catch (e) {
-      _showSnackbar('Failed to sign in with Google');
+      _showSnackbar("Google Sign-In failed: ${e.toString()}");
     } finally {
       if (mounted) setState(() => _isLoadingGoogle = false);
     }
@@ -199,26 +208,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: const Text('Change Email', style: TextStyle(fontSize: 12, color: Colors.blue, fontWeight: FontWeight.w300)),
                   ),
                 ],
-              ),
-
-              const SizedBox(height: 20),
-
-              // Mobile Login Button (New Addition)
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-                  ),
-                  icon: const Icon(Icons.phone, size: 20, color: Colors.white),
-                  label: const Text('Sign in with Mobile', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => PhoneAuthScreen()));
-                  },
-                ),
               ),
             ],
           ),

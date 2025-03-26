@@ -14,7 +14,7 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
   int sampleCount = 4; // Default sample count
 
   final List<String> districts = [
-    'Thiruvananthapuram', 'Kollam', 'Pathanamthitta', 'Kottayam', 'Idukki',
+    'Thiruvananthapuram', 'Kollam', 'Pathanamthitta','Alappuzha', 'Kottayam', 'Idukki','Ernakulam',
     'Thrissur', 'Palakkad', 'Malappuram', 'Kozhikode', 'Wayanad', 'Kannur', 'Kasargod'
   ];
 
@@ -23,15 +23,17 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
     'Thiruvananthapuram': ['Neyyattinkara', 'Thiruvananthapuram AP', 'Thiruvananthapuram', 'Varkala'],
     'Kollam': ['Aryankavu', 'Kollam', 'Punalur'],
     'Pathanamthitta': ['Konni', 'Kurudamannil'],
+    'Alappuzha': ['Alappuzha (OBSY)', 'Cherthala', 'Haripad', 'Kayamkulam (AGRO)', 'Kayamkulam (RARS)', 'Mancompu', 'Mavelikara'],
     'Kottayam': ['Kanjirappally', 'Kottayam', 'Kozha', 'Kumarakom', 'Vaikom'],
     'Idukki': ['Idukki', 'Munnar', 'Myladumpara Agri', 'Peermade', 'Thodupuzha'],
+    'Ernakulam': ['Alwaye PWD', 'NAS Kochi (OBSY)', 'Perumbavoor', 'Piravam', 'Ernakulam'],
     'Thrissur': ['Chalakudi', 'Enamakkal', 'Irinjalakuda', 'Kodungallur', 'Kunnakulam', 'Vadakkancherry', 'Vellanikkara'],
     'Palakkad': ['Alathur', 'Chittur', 'Kollengode', 'Mannarkad', 'Ottapalam', 'Palakkad', 'Parambikulam', 'Pattambi', 'Trithala'],
     'Malappuram': ['Angadipuram', 'Karipur', 'Manjeri', 'Nilambur', 'Perinthalmanna', 'Ponnani'],
     'Kozhikode': ['Kozhikode', 'Quilandi', 'Vadakara'],
     'Wayanad': ['Ambalavayil', 'Kuppadi', 'Mananthavady', 'Vythiri'],
     'Kannur': ['Irikkur', 'Kannur', 'Mahe', 'Taliparamba', 'Thalassery'],
-    'Kasargod': ['Hosdurg', 'Kudulu']
+    'Kasargod': ['Hosdurg', 'Kudulu'],
   };
 
   String? selectedDistrict;

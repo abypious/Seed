@@ -22,6 +22,51 @@
           }
         },
         {
+          "client_id": "245489876869-t24gqrmj2lb9cnbp5epv5u0t7hcmp4bf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.seed.seed",
+            "certificate_hash": "3a169e6392bd543145a1d68feac7d8f81d0f6016"
+          }
+        },
+        {
+          "client_id": "245489876869-mifpanqifdidp0j992adj9fb3liecevc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApN_F5i8DkR4T-NtVk-oW9W6VYXxEoqjo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "245489876869-mifpanqifdidp0j992adj9fb3liecevc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:245489876869:android:412ffa57993eba7cf7ceec",
+        "android_client_info": {
+          "package_name": "sees.seed.com"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "245489876869-huv01u8pl4doq1urrfug04lsngfoahqk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "sees.seed.com",
+            "certificate_hash": "3a169e6392bd543145a1d68feac7d8f81d0f6016"
+          }
+        },
+        {
           "client_id": "245489876869-mifpanqifdidp0j992adj9fb3liecevc.apps.googleusercontent.com",
           "client_type": 3
         }

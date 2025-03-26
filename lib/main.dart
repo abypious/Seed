@@ -1,12 +1,14 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:seed/screens/home.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:seed/models/crop_prediction/tflite_model.dart';
 import 'package:seed/screens/onboarding.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:seed/screens/dashboard.dart';
 import 'components/colors.dart';
-import 'components/splashScreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,7 +28,6 @@ void main() async {
     await Firebase.initializeApp();
   }
 
-  // Check if user has completed onboarding
   SharedPreferences prefs = await SharedPreferences.getInstance();
   bool isFirstTime = prefs.getBool('first_time') ?? true;
 
@@ -49,14 +50,32 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late bool showOnboarding;
+  User? user;
 
   @override
   void initState() {
     super.initState();
     showOnboarding = widget.isFirstTime;
+    _checkUserStatus();
   }
 
-  // This method will be called when onboarding is completed
+  Future<void> _checkUserStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isFirstTime = prefs.getBool('first_time') ?? true;
+    String? storedEmail = prefs.getString('user_email');
+
+    setState(() {
+      showOnboarding = isFirstTime;
+      user = FirebaseAuth.instance.currentUser;
+
+      if (storedEmail != null && storedEmail.isNotEmpty) {
+        user = FirebaseAuth.instance.currentUser;
+      }
+    });
+  }
+
+
+  // Mark onboarding as completed
   void _completeOnboarding() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('first_time', false);
@@ -64,7 +83,6 @@ class _MyAppState extends State<MyApp> {
       showOnboarding = false;
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -79,9 +97,19 @@ class _MyAppState extends State<MyApp> {
           surfaceTintColor: Colors.transparent, // For Material 3 apps
         ), // ← Missing closing parenthesis added here
       ),
-      home: showOnboarding ? OnboardingScreen(onComplete: _completeOnboarding) : SplashScreen(),
+      home: _getStartingScreen(),
     );
   }
 
+  Widget _getStartingScreen() {
+    if (showOnboarding) {
+      return OnboardingScreen(onComplete: _completeOnboarding);
+    } else if (user != null) {
+      return DashboardScreen();
+    } else {
+      return HomeScreen();
+    }
+  }
 
 }
+

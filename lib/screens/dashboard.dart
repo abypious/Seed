@@ -1,15 +1,16 @@
 import 'dart:async';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:seed/components/colors.dart';
 import 'package:seed/screens/functions/pest.dart';
+import 'package:seed/screens/home.dart';
 import 'package:seed/screens/profile.dart';
 import '../components/loading.dart';
 import '../models/crop_prediction/TestInfoScreen.dart';
 import 'functions/ai_assistant_screen.dart';
 import 'functions/cropAtlas.dart';
-import 'functions/pest.dart';
 import 'functions/fertilizer.dart';
 import 'functions/irrigation_planner_screen.dart';
 import 'functions/weather_outlook_screen.dart';
@@ -84,20 +85,21 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
     });
   }
 
+
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-
-      child: Scaffold(
-        extendBody: true,
-        key: _scaffoldKey,
+    return WillPopScope(
+      onWillPop: () async => false, // Disable back button
+      child: SafeArea(
+        top: false,
+        child: Scaffold(
+          extendBody: true,
+          key: _scaffoldKey,
           appBar: AppBar(
             title: Text(_getAppBarTitle(_selectedIndex)),
             backgroundColor: Colors.transparent,
             foregroundColor: AppColors.black,
-            automaticallyImplyLeading: false,
-
+            automaticallyImplyLeading: false, // Remove default back button
             leading: _selectedIndex == 0
                 ? IconButton(
               icon: const Icon(Icons.menu, color: AppColors.black),
@@ -108,10 +110,10 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
             actions: _selectedIndex == 0
                 ? [
               Padding(
-                padding: const EdgeInsets.only(right: 16), // Adjust spacing
+                padding: const EdgeInsets.only(right: 16),
                 child: SizedBox(
-                  width: 60,  // Increase width
-                  height: 60, // Increase height
+                  width: 60,
+                  height: 60,
                   child: FloatingActionButton(
                     backgroundColor: Colors.transparent,
                     elevation: 0,
@@ -121,7 +123,7 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
                     onPressed: () => _showNavigation(context,  PlantDiseaseScreen()),
                     child: Lottie.asset(
                       'assets/lottie/scan.json',
-                      width: 60,  // Increase animation size
+                      width: 60,
                       height: 60,
                       fit: BoxFit.cover,
                     ),
@@ -132,24 +134,22 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
                 : [],
 
           ),
-
-
           drawer: _buildDrawer(),
-        body: Stack(
-          children: [
-            PageView(
-              controller: _pageController,
-              physics: const NeverScrollableScrollPhysics(), // Prevents swipe navigation
-              children: _screens,
-            ),
-            if (_selectedIndex == 0) _buildChatbotAssistant(), // Show only on home page
-          ],
-        ),
-        bottomNavigationBar: Theme(
-          data: Theme.of(context).copyWith(
-            iconTheme: const IconThemeData(color: AppColors.black),
+          body: Stack(
+            children: [
+              PageView(
+                controller: _pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                children: _screens,
+              ),
+              if (_selectedIndex == 0) _buildChatbotAssistant(),
+            ],
           ),
-          child: CurvedNavigationBar(
+          bottomNavigationBar: Theme(
+            data: Theme.of(context).copyWith(
+              iconTheme: const IconThemeData(color: AppColors.black),
+            ),
+            child: CurvedNavigationBar(
               backgroundColor: Colors.transparent,
               color: AppColors.secondary,
               buttonBackgroundColor: AppColors.primary,
@@ -157,22 +157,28 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
               animationDuration: const Duration(milliseconds: 500),
               index: _selectedIndex,
               onTap: _onItemTapped,
-              items: items),
-        )
+              items: items,
+            ),
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildDrawer() {
+    final user = FirebaseAuth.instance.currentUser;
+
     return Drawer(
       child: Column(
         children: [
           UserAccountsDrawerHeader(
-            accountName: const Text("Ashwin"),
-            accountEmail: const Text("ashwin1234@gmail.com"),
+            accountName: Text(user?.displayName ?? "Guest User"),
+            accountEmail: Text(user?.email ?? "No Email"),
             currentAccountPicture: CircleAvatar(
               backgroundColor: Colors.white,
-              child: Image.asset("assets/images/profile.png"),
+              backgroundImage: user?.photoURL != null
+                  ? NetworkImage(user!.photoURL!)
+                  : const AssetImage("assets/images/profile.png") as ImageProvider,
             ),
             decoration: const BoxDecoration(color: AppColors.secondary),
           ),
@@ -181,6 +187,7 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
       ),
     );
   }
+
 
   List<Widget> _drawerItems() {
     return [
@@ -196,9 +203,24 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
           MaterialPageRoute(builder: (context) => const UserProfileScreen()),
         );
       }),
-      _buildDrawerItem(Icons.logout, "Logout", null),
+      _buildDrawerItem(Icons.logout, "Logout", null, onTap: _logout),
     ];
   }
+
+  void _logout() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Logout failed: ${e.toString()}")),
+      );
+    }
+  }
+
 
   Widget _buildDrawerItem(IconData icon, String title, int? index, {VoidCallback? onTap}) {
     return ListTile(

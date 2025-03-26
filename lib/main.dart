@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:seed/models/crop_prediction/tflite_model.dart';
 import 'package:seed/screens/onboarding.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'components/colors.dart';
 import 'components/splashScreen.dart';
 
 void main() async {
@@ -70,6 +71,9 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'SEED App',
+      theme: ThemeData(
+        scaffoldBackgroundColor: AppColors.white, // Set global background color
+      ),
       home: showOnboarding ? OnboardingScreen(onComplete: _completeOnboarding) : SplashScreen(),
     );
   }

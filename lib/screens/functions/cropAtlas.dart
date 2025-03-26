@@ -4,6 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:path_drawing/path_drawing.dart';
 import 'package:xml/xml.dart';
 import 'package:http/http.dart' as http;
+import 'package:fluttertoast/fluttertoast.dart';
+import '../../components/colors.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+
 
 class AtlasMap extends StatefulWidget {
   const AtlasMap({super.key});
@@ -87,8 +92,11 @@ class AtlasMapState extends State<AtlasMap> {
       currentDistrict = district;
       currentRainfall = "Fetching...";
     });
+
+    // Zoom in by increasing the scale factor
     getWeatherData(district.id);
   }
+
 
 
   Widget _buildLegendBox() {
@@ -115,6 +123,7 @@ class AtlasMapState extends State<AtlasMap> {
             ),
 
             const SizedBox(height: 5),
+
             Text(
               "Top Crops: ${getTopCrops(currentDistrict!.id)}",
               style: const TextStyle(fontSize: 14),
@@ -127,7 +136,11 @@ class AtlasMapState extends State<AtlasMap> {
               "Rainfall: ${currentRainfall ?? 'Loading...'}",
               style: const TextStyle(fontSize: 14),
             ),
+
+            const SizedBox(height: 10),
+
           ],
+
         ),
       ),
     );
@@ -220,8 +233,8 @@ class AtlasMapState extends State<AtlasMap> {
           curve: Curves.easeOut,
           color: isSelected ? Colors.green : const Color(0xFFD7D3D2),
           child: AnimatedScale(
-            duration: const Duration(milliseconds: 300),
-            scale: isSelected ? 1.08 : 1.0,
+            duration: const Duration(milliseconds: 400),
+            scale: isSelected ? 1.2 : 1.0,  // Increased scale
             curve: Curves.easeOut,
             child: AnimatedOpacity(
               duration: const Duration(milliseconds: 300),
@@ -233,6 +246,7 @@ class AtlasMapState extends State<AtlasMap> {
       ),
     );
   }
+
 
   String capitalizeFirstLetter(String text) {
     if (text.isEmpty) return text;

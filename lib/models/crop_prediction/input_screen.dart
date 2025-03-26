@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:seed/models/crop_prediction/result.dart';
+import '../../components/colors.dart';
 import 'ExcelService.dart';
 import 'esp_service.dart';
 
@@ -28,24 +28,11 @@ class _InputScreenState extends State<InputScreen> {
   double? rainfallData;
   int currentSample = 0;
   List<Map<String, double>> collectedSamples = [];
-  String espIp = "172.16.21.30";
 
   @override
   void initState() {
     super.initState();
     _fetchRainfallData();
-    _checkESPConnection();
-  }
-
-  Future<void> _checkESPConnection() async {
-    try {
-      final result = await InternetAddress.lookup(espIp);
-      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        _showNotification("ESP32 is connected!", Colors.green);
-      }
-    } catch (e) {
-      _showNotification("ESP32 is NOT connected!", Colors.red);
-    }
   }
 
   Future<void> _fetchRainfallData() async {
@@ -69,6 +56,23 @@ class _InputScreenState extends State<InputScreen> {
 
     setState(() => isLoading = true);
 
+    // Show the loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text("Taking Sample"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            CircularProgressIndicator(),
+            SizedBox(height: 10),
+            Text("Collecting sample..."),
+          ],
+        ),
+      ),
+    );
+
     try {
       Map<String, dynamic> sensorData = await ESPService.getSensorData();
 
@@ -87,9 +91,18 @@ class _InputScreenState extends State<InputScreen> {
         currentSample++;
       });
 
-      _showNotification("Sample ${currentSample} collected!", Colors.green);
+      // Wait before closing the dialog
+      await Future.delayed(const Duration(seconds: 1));
+
+      if (mounted) {
+        Navigator.pop(context); // Close the dialog
+        _showNotification("Sample $currentSample collected!", Colors.green);
+      }
     } catch (e) {
-      _showNotification("Error fetching ESP32 data!", Colors.red);
+      if (mounted) {
+        Navigator.pop(context); // Close the dialog
+        _showNotification("Error fetching ESP32 data!", Colors.red);
+      }
     } finally {
       if (mounted) {
         setState(() => isLoading = false);
@@ -123,7 +136,6 @@ class _InputScreenState extends State<InputScreen> {
       currentSample = 0;
       collectedSamples.clear();
       _fetchRainfallData();
-      _checkESPConnection();
     });
   }
 
@@ -139,10 +151,11 @@ class _InputScreenState extends State<InputScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: AppColors.white,
       appBar: AppBar(
         title: const Text("Soil Sample Collection"),
-        backgroundColor: Colors.teal,
+        automaticallyImplyLeading: false,
+        backgroundColor: AppColors.white,
         elevation: 2,
       ),
       body: Padding(
@@ -170,11 +183,21 @@ class _InputScreenState extends State<InputScreen> {
               ),
             ),
             const SizedBox(height: 10),
-            LinearProgressIndicator(
-              value: currentSample / widget.samples,
-              backgroundColor: Colors.grey[300],
-              color: Colors.teal,
-              minHeight: 8,
+            TweenAnimationBuilder<double>(
+              tween: Tween<double>(
+                begin: 0,
+                end: currentSample / widget.samples,
+              ),
+              duration: const Duration(milliseconds: 600),
+              curve: Curves.easeInOut,
+              builder: (context, value, child) {
+                return LinearProgressIndicator(
+                  value: value,
+                  backgroundColor: Colors.grey[300],
+                  color: Colors.teal,
+                  minHeight: 8,
+                );
+              },
             ),
             const SizedBox(height: 20),
             Expanded(
@@ -201,9 +224,9 @@ class _InputScreenState extends State<InputScreen> {
                                 Text("Moisture: ${sample["moisture"]!.toStringAsFixed(2)}%"),
                                 Text("Temperature: ${sample["temperature"]!.toStringAsFixed(2)}°C"),
                                 Text("pH: ${sample["pH"]!.toStringAsFixed(2)}"),
-                                Text("Nitrogen (N): ${sample["nitrogen"]!.toStringAsFixed(2)}"),
-                                Text("Phosphorus (P): ${sample["phosphorus"]!.toStringAsFixed(2)}"),
-                                Text("Potassium (K): ${sample["potassium"]!.toStringAsFixed(2)}"),
+                                Text("Nitrogen: ${sample["nitrogen"]!.toStringAsFixed(2)}"),
+                                Text("Phosphorus: ${sample["phosphorus"]!.toStringAsFixed(2)}"),
+                                Text("Potassium: ${sample["potassium"]!.toStringAsFixed(2)}"),
                                 Text("Rainfall: ${sample["rainfall"]!.toStringAsFixed(2)} mm"),
                               ],
                             ),
@@ -220,29 +243,57 @@ class _InputScreenState extends State<InputScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: isLoading
-                      ? null
-                      : (currentSample >= widget.samples ? _navigateToResultScreen : _fetchSampleData),
-                  icon: Icon(
-                    currentSample >= widget.samples ? Icons.arrow_forward : Icons.add,
-                    color: Colors.white,
-                  ),
-                  label: Text(
-                    currentSample >= widget.samples ? "Proceed" : "Take Sample",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+            ElevatedButton(
+              onPressed: isLoading
+                  ? null
+                  : (currentSample >= widget.samples ? _navigateToResultScreen : _fetchSampleData),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.restart_alt, color: Colors.red, size: 32),
-                  onPressed: _restartProcess,
+                elevation: 8,
+                shadowColor: Colors.transparent, // Removes button shadow
+                backgroundColor: Colors.transparent, // Makes background fully transparent
+                disabledForegroundColor: Colors.transparent.withOpacity(0), // Removes grey effect when disabled
+                disabledBackgroundColor: Colors.transparent.withOpacity(0),
+              ),
+              child: Ink(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Colors.teal, Colors.green],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(30),
                 ),
-              ],
+                child: Container(
+                  constraints: const BoxConstraints(minWidth: 180),
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        currentSample >= widget.samples ? Icons.arrow_forward : Icons.add,
+                        color: Colors.white,
+                        size: 26,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        currentSample >= widget.samples ? "Proceed" : "Take Sample",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
+
           ],
         ),
       ),

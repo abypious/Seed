@@ -34,7 +34,6 @@ dependencies:
   fluttertoast: ^8.2.12
   dart_ping: ^9.0.1
 
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

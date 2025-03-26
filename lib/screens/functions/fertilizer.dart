@@ -191,7 +191,7 @@ class _FertilizerRecommendationScreenState
               onPressed: _dataFetched ? _getFertilizerRecommendation : _fetchDataFromESP,
               label: Text(_dataFetched ? "Get AI Recommendation" : "Fetch Data" ,style:const TextStyle(color: AppColors.black),),
               style: ElevatedButton.styleFrom(
-                backgroundColor: _dataFetched ? AppColors.primary: Colors.grey,
+                backgroundColor: _dataFetched ? AppColors.primary: Colors.greenAccent,
                 minimumSize: const Size(35, 50),
                 textStyle: const TextStyle(fontSize: 18),
               ),

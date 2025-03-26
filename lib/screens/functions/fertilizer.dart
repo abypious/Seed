@@ -2,8 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
+import 'package:seed/components/colors.dart';
 import 'dart:convert';
 import '../../models/crop_prediction/esp_service.dart';
+
+
 
 class FertilizerRecommendationScreen extends StatefulWidget {
   const FertilizerRecommendationScreen({super.key});
@@ -31,19 +34,27 @@ class _FertilizerRecommendationScreenState
   @override
   void initState() {
     super.initState();
-    _checkESPConnection();
   }
 
-  Future<void> _checkESPConnection() async {
-    try {
-      final result = await InternetAddress.lookup(espIp);
-      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        _showNotification("ESP32 is connected!", Colors.green);
-      }
-    } catch (e) {
-      _showNotification("ESP32 is NOT connected!", Colors.red);
-    }
+  void _showLoadingDialog(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent closing by tapping outside
+      builder: (context) {
+        return AlertDialog(
+          content: Row(
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(width: 20),
+              Text(message),
+            ],
+          ),
+        );
+      },
+    );
   }
+
+
 
   void _showNotification(String message, Color color) {
     Fluttertoast.showToast(
@@ -57,19 +68,27 @@ class _FertilizerRecommendationScreenState
   }
 
   Future<void> _fetchDataFromESP() async {
-    setState(() => _isLoading = true);
+    _showLoadingDialog("Fetching Data");
 
-    final data = await ESPService.getSensorData();
-    if (!mounted) return;
-    setState(() {
-      _phController.text = data["pH"].toString();
-      _nitrogenController.text = data["nitrogen"].toString();
-      _phosphorusController.text = data["phosphorus"].toString();
-      _potassiumController.text = data["potassium"].toString();
-      _dataFetched = true;
-      _isLoading = false;
-    });
+    try {
+      final data = await ESPService.getSensorData();
+
+      if (!mounted) return;
+      setState(() {
+        _phController.text = data["pH"].toString();
+        _nitrogenController.text = data["nitrogen"].toString();
+        _phosphorusController.text = data["phosphorus"].toString();
+        _potassiumController.text = data["potassium"].toString();
+        _dataFetched = true;
+      });
+
+    } catch (e) {
+      _showNotification("Error fetching data!", Colors.red);
+    } finally {
+      if (mounted) Navigator.pop(context); // Close the dialog
+    }
   }
+
 
   Future<void> _getFertilizerRecommendation() async {
     if (_selectedCrop == null || _selectedCrop!.isEmpty) {
@@ -143,13 +162,12 @@ class _FertilizerRecommendationScreenState
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildTextField("Soil pH", _phController, Icons.science),
-            _buildTextField("Nitrogen (mg/kg)", _nitrogenController, Icons.thermostat),
-            _buildTextField("Phosphorus (mg/kg)", _phosphorusController, Icons.grass),
-            _buildTextField("Potassium (mg/kg)", _potassiumController, Icons.local_florist),
+            _buildTextField("Soil pH", _phController),
+            _buildTextField("Nitrogen (mg/kg)", _nitrogenController),
+            _buildTextField("Phosphorus (mg/kg)", _phosphorusController),
+            _buildTextField("Potassium (mg/kg)", _potassiumController),
 
-            const SizedBox(height: 10),
-            const Text("Select Crop:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 25),
 
             DropdownButton<String>(
               value: _selectedCrop,
@@ -171,11 +189,10 @@ class _FertilizerRecommendationScreenState
 
             ElevatedButton.icon(
               onPressed: _dataFetched ? _getFertilizerRecommendation : _fetchDataFromESP,
-              icon: Icon(_dataFetched ? Icons.recommend : Icons.download, color: Colors.white),
-              label: Text(_dataFetched ? "Get AI Recommendation" : "Fetch Data"),
+              label: Text(_dataFetched ? "Get AI Recommendation" : "Fetch Data" ,style:const TextStyle(color: AppColors.black),),
               style: ElevatedButton.styleFrom(
-                backgroundColor: _dataFetched ? Colors.green : Colors.grey,
-                minimumSize: const Size(double.infinity, 50),
+                backgroundColor: _dataFetched ? AppColors.primary: Colors.grey,
+                minimumSize: const Size(35, 50),
                 textStyle: const TextStyle(fontSize: 18),
               ),
             ),
@@ -183,7 +200,7 @@ class _FertilizerRecommendationScreenState
             const SizedBox(height: 20),
             if (_recommendation.isNotEmpty)
               Card(
-                color: Colors.lightGreen[100],
+                color: AppColors.primary,
                 elevation: 5,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 child: Padding(
@@ -197,7 +214,7 @@ class _FertilizerRecommendationScreenState
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, IconData icon) {
+  Widget _buildTextField(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: TextField(
@@ -205,7 +222,6 @@ class _FertilizerRecommendationScreenState
         keyboardType: TextInputType.number,
         decoration: InputDecoration(
           labelText: label,
-          prefixIcon: Icon(icon, color: Colors.green),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         ),
       ),

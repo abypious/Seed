@@ -90,7 +90,12 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       title: 'SEED App',
       theme: ThemeData(
-        scaffoldBackgroundColor: AppColors.white,
+        scaffoldBackgroundColor: AppColors.white, // Set Scaffold background color
+        appBarTheme: AppBarTheme(
+          backgroundColor: AppColors.white, // Match AppBar with Scaffold
+          elevation: 2, // Optional: Set elevation
+          surfaceTintColor: Colors.transparent, // For Material 3 apps
+        ), // ← Missing closing parenthesis added here
       ),
       home: _getStartingScreen(),
     );
@@ -105,5 +110,6 @@ class _MyAppState extends State<MyApp> {
       return HomeScreen();
     }
   }
+
 }
 

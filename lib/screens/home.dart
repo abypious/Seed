@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:seed/components/colors.dart';
+import 'package:seed/screens/auth/signup.dart';
 import 'auth/login.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -6,10 +8,10 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF7de26d),
+        backgroundColor: AppColors.white,
       ),
       body: Container(
-        color: const Color(0xFF7de26d),
+        color: AppColors.white,
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

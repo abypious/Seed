@@ -41,7 +41,7 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
     const Icon(Icons.agriculture),
     const Icon(Icons.wb_cloudy),
     const Icon(Icons.science),
-    const Icon(Icons.map),
+    const Icon(Icons.location_searching_outlined),
   ];
 
   @override
@@ -106,7 +106,9 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
               onPressed: () => _scaffoldKey.currentState?.openDrawer(),
             )
                 : null,
-            actions: [
+
+            actions: _selectedIndex == 0
+                ? [
               Padding(
                 padding: const EdgeInsets.only(right: 16),
                 child: SizedBox(
@@ -118,7 +120,7 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
                     hoverColor: Colors.transparent,
                     highlightElevation: 0,
                     splashColor: Colors.transparent,
-                    onPressed: () => _showNavigation(context, PlantDiseaseScreen()),
+                    onPressed: () => _showNavigation(context,  PlantDiseaseScreen()),
                     child: Lottie.asset(
                       'assets/lottie/scan.json',
                       width: 60,
@@ -128,7 +130,9 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
                   ),
                 ),
               ),
-            ],
+            ]
+                : [],
+
           ),
           drawer: _buildDrawer(),
           body: Stack(
@@ -176,7 +180,7 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
                   ? NetworkImage(user!.photoURL!)
                   : const AssetImage("assets/images/profile.png") as ImageProvider,
             ),
-            decoration: const BoxDecoration(color: Colors.green),
+            decoration: const BoxDecoration(color: AppColors.secondary),
           ),
           ..._drawerItems(),
         ],
@@ -189,9 +193,9 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
     return [
       _buildDrawerItem(Icons.home, "Home", 0),
       _buildDrawerItem(Icons.agriculture, "Crop Advisor", 1),
-      _buildDrawerItem(Icons.water_drop, "Irrigation", 2),
+      _buildDrawerItem(Icons.cloud , "Irrigation", 2),
       _buildDrawerItem(Icons.science, "Fertilizer", 3),
-      _buildDrawerItem(Icons.map, "Atlas", 4),
+      _buildDrawerItem(Icons.location_searching_outlined, "Atlas", 4),
       const Divider(),
       _buildDrawerItem(Icons.account_circle, "Profile", null, onTap: () {
         Navigator.push(
@@ -220,11 +224,19 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
 
   Widget _buildDrawerItem(IconData icon, String title, int? index, {VoidCallback? onTap}) {
     return ListTile(
-      leading: Icon(icon, color: Colors.green),
+      leading: Icon(icon, color: AppColors.black),
       title: Text(title),
-      onTap: onTap ?? () => index != null ? _onItemTapped(index) : null,
+      onTap: () {
+        Navigator.pop(context); // Close the drawer first
+        if (onTap != null) {
+          onTap();
+        } else if (index != null) {
+          _onItemTapped(index);
+        }
+      },
     );
   }
+
 
   Widget _buildChatbotAssistant() {
     return Align(

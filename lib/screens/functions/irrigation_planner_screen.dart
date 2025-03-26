@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:seed/components/colors.dart';
 
 class IrrigationScreen extends StatefulWidget {
   const IrrigationScreen({super.key});
@@ -87,13 +88,13 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
               "parts": [
                 {
                   "text": """
-                Provide a irrigation advise for $_selectedCrop :
+                Provide an irrigation advice for $_selectedCrop :
 
                 Response should include:
                 1. Crop-Specific Irrigation advises
-                2. general tips for good irrigation
+                2. General tips for good irrigation
 
-                Keep the response concise (30-50 words) don't use any special symbols.
+                Keep the response concise (30-50 words). Don't use any special symbols.
                 """
                 }
               ]
@@ -104,7 +105,8 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final advisor = data["candidates"][0]["content"]["parts"][0]["text"];
+        final advisor = data["candidates"][0]["content"]["parts"][0]["text"]
+            .replaceAll('*', ''); // Remove ** asterisks
 
         if (!mounted) return;
         setState(() {
@@ -112,17 +114,18 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
           _isLoading = false;
         });
       } else {
-        throw Exception("Failed to fetch advise. Error: ${response.body}");
+        throw Exception("Failed to fetch advice. Error: ${response.body}");
       }
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _advisor = "Failed to get advise. Please try again.";
+        _advisor = "Failed to get advice. Please try again.";
         _isLoading = false;
       });
       _showNotification("Error: ${e.toString()}", Colors.red);
     }
   }
+
 
 //Process fetched weather data and generate recommendation & advisor
   Future<void> _processWeatherData(Map<String, dynamic> data) async {
@@ -145,11 +148,11 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
 
     setState(() {
       _recommendation = """
-        🌧 Past Rainfall: ${pastRainfallTotal.toStringAsFixed(2)} mm  
-        🌤 Predicted Rainfall: ${futureRainfallTotal.toStringAsFixed(2)} mm  
-        🕒 Last Irrigation: $irrigationText  
+       Past Rainfall: ${pastRainfallTotal.toStringAsFixed(2)} mm  
+       Predicted Rainfall: ${futureRainfallTotal.toStringAsFixed(2)} mm  
+       Last Irrigation: $irrigationText  
         
-        ✅ Recommendation: $recommendation
+        Recommendation: $recommendation
         """;
     });
 
@@ -193,19 +196,26 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
 
   //Build Information Card
   Widget _buildInfoCard(String content, Color? color) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: color,
-      elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: Text(
-          content,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+    return SizedBox(
+      height: 230,
+      width: double.infinity,// Fixed height for consistent size
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        color: color,
+        elevation: 4,
+        child: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: SingleChildScrollView( // Enables scrolling if text is long
+            child: Text(
+              content,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+          ),
         ),
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -216,8 +226,10 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+            const SizedBox(height: 20),
               // Crop Selection
               _buildDropdown<String>(
+
                 label: "Select Crop",
                 value: _selectedCrop,
                 hint: "Choose the crop you are growing",
@@ -255,11 +267,11 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 15),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      backgroundColor: Colors.blue,
+                      backgroundColor: AppColors.primary,
                     ),
                     child: _isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text("Get Irrigation Plan", style: TextStyle(fontSize: 16)),
+                        : const Text("Get Irrigation Plan", style: TextStyle(fontSize: 16,color: Colors.black87) ),
                   ),
                 ),
 

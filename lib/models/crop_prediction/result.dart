@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:seed/components/colors.dart';
 import 'predicted_crop.dart';
+
 class ResultScreen extends StatelessWidget {
   final List<Map<String, double>> samples;
 
@@ -40,35 +42,28 @@ class ResultScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text(
           'Soil Analysis Result',
           style: TextStyle(
             color: Colors.black,
-            fontWeight: FontWeight.bold,
             fontSize: 22,
           ),
         ),
-        backgroundColor: Color(0xFF7de26d),
-        centerTitle: true,
+        backgroundColor: AppColors.white,
+        shadowColor: Colors.black54,
+        elevation: 2,
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFFFF7E7), Color(0xFFD9FFD2)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
+        color: AppColors.white,
         padding: const EdgeInsets.all(20.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Text(
               'Averaged Soil Sample Data',
               style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
+                fontSize: 20,
                 color: Colors.black87,
               ),
               textAlign: TextAlign.center,
@@ -93,10 +88,7 @@ class ResultScreen extends StatelessWidget {
                 ),
               ),
             ),
-
             const SizedBox(height: 30),
-
-            // Proceed Button
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -107,17 +99,16 @@ class ResultScreen extends StatelessWidget {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.amber,
+                backgroundColor: AppColors.primary,
                 padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 40),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 elevation: 3,
               ),
               child: const Text(
                 'Predict',
-                style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(color: Colors.black87, fontSize: 18,),
               ),
             ),
-
           ],
         ),
       ),

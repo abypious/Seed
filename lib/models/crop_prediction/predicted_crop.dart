@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:seed/components/colors.dart';
 import 'package:tflite_flutter/tflite_flutter.dart' as tfl;
 
 class PredictedCropScreen extends StatefulWidget {
@@ -101,12 +102,12 @@ class _PredictedCropScreenState extends State<PredictedCropScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text(
           'Predicted Crops',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 22),
+          style: TextStyle(color: Colors.black,fontSize: 21),
         ),
-        backgroundColor: const Color(0xFF7de26d),
-        centerTitle: true,
+        backgroundColor:AppColors.white,
       ),
       body: Container(
         padding: const EdgeInsets.all(20.0),
@@ -115,7 +116,7 @@ class _PredictedCropScreenState extends State<PredictedCropScreen> {
           children: [
             const Text(
               'Top 3 Recommended Crops',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+              style: TextStyle(fontSize: 20, color: Colors.black87),
             ),
             const SizedBox(height: 20),
             ..._predictions.map((prediction) => _buildCropCard(prediction)).toList(),
@@ -160,12 +161,12 @@ class _PredictedCropScreenState extends State<PredictedCropScreen> {
                   children: [
                     Text(
                       cropName.toUpperCase(),
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontSize: 20),
                     ),
                     const SizedBox(height: 5),
                     Text(
                       '${(prediction["probability"] * 100).toStringAsFixed(2)}%',
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
+                      style: const TextStyle(fontSize: 20, color: Colors.teal),
                     ),
                   ],
                 ),
@@ -197,7 +198,7 @@ class _PredictedCropScreenState extends State<PredictedCropScreen> {
                   children: [
                     Text(
                       cropName.toUpperCase(),
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontSize: 20),
                     ),
                     const SizedBox(height: 15),
                     Text(
@@ -206,14 +207,6 @@ class _PredictedCropScreenState extends State<PredictedCropScreen> {
                       style: const TextStyle(fontSize: 18),
                     ),
                   ],
-                ),
-              ),
-              Positioned(
-                right: -10,
-                top: -10,
-                child: IconButton(
-                  icon: const Icon(Icons.close, size: 28, color: Colors.red),
-                  onPressed: () => Navigator.of(context).pop(),
                 ),
               ),
             ],

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:seed/screens/auth/signup.dart';
 import 'auth/login.dart';
-import 'dashboard.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -42,9 +40,9 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.push(
+                      Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => DashboardScreen()),
+                        MaterialPageRoute(builder: (context) => LoginScreen()),
                       );
                     },
                     style: ElevatedButton.styleFrom(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'input_screen.dart';
+import 'package:seed/components/colors.dart';
 
 class TestInfoScreen extends StatefulWidget {
   @override
@@ -13,7 +14,7 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
   int sampleCount = 4; // Default sample count
 
   final List<String> districts = [
-    'Thiruvananthapuram', 'Kollam', 'Pathanamthitta', 'Kottayam', 'Idukki',
+    'Thiruvananthapuram', 'Kollam', 'Pathanamthitta','Alappuzha', 'Kottayam', 'Idukki','Ernakulam',
     'Thrissur', 'Palakkad', 'Malappuram', 'Kozhikode', 'Wayanad', 'Kannur', 'Kasargod'
   ];
 
@@ -22,15 +23,17 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
     'Thiruvananthapuram': ['Neyyattinkara', 'Thiruvananthapuram AP', 'Thiruvananthapuram', 'Varkala'],
     'Kollam': ['Aryankavu', 'Kollam', 'Punalur'],
     'Pathanamthitta': ['Konni', 'Kurudamannil'],
+    'Alappuzha': ['Alappuzha (OBSY)', 'Cherthala', 'Haripad', 'Kayamkulam (AGRO)', 'Kayamkulam (RARS)', 'Mancompu', 'Mavelikara'],
     'Kottayam': ['Kanjirappally', 'Kottayam', 'Kozha', 'Kumarakom', 'Vaikom'],
     'Idukki': ['Idukki', 'Munnar', 'Myladumpara Agri', 'Peermade', 'Thodupuzha'],
+    'Ernakulam': ['Alwaye PWD', 'NAS Kochi (OBSY)', 'Perumbavoor', 'Piravam', 'Ernakulam'],
     'Thrissur': ['Chalakudi', 'Enamakkal', 'Irinjalakuda', 'Kodungallur', 'Kunnakulam', 'Vadakkancherry', 'Vellanikkara'],
     'Palakkad': ['Alathur', 'Chittur', 'Kollengode', 'Mannarkad', 'Ottapalam', 'Palakkad', 'Parambikulam', 'Pattambi', 'Trithala'],
     'Malappuram': ['Angadipuram', 'Karipur', 'Manjeri', 'Nilambur', 'Perinthalmanna', 'Ponnani'],
     'Kozhikode': ['Kozhikode', 'Quilandi', 'Vadakara'],
     'Wayanad': ['Ambalavayil', 'Kuppadi', 'Mananthavady', 'Vythiri'],
     'Kannur': ['Irikkur', 'Kannur', 'Mahe', 'Taliparamba', 'Thalassery'],
-    'Kasargod': ['Hosdurg', 'Kudulu']
+    'Kasargod': ['Hosdurg', 'Kudulu'],
   };
 
   String? selectedDistrict;
@@ -88,7 +91,6 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
     return Scaffold(
       body: SingleChildScrollView(
         child: Container(
-          color: const Color(0xFFD9FFD2),
           padding: const EdgeInsets.all(20.0),
           child: Form(
             key: _formKey,
@@ -96,27 +98,42 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Enter test details to improve prediction accuracy.',
-                  style: TextStyle(fontSize: 16, color: Colors.black87),
+                  'Enter details to improve accuracy.',
+                  style: TextStyle(fontSize: 16, color:  AppColors.black),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
 
                 TextFormField(
                   controller: landAreaController,
-                  decoration: const InputDecoration(
-                    labelText: 'Land Area (in acres)',
-                    prefixIcon: Icon(Icons.landscape),
-                    border: OutlineInputBorder(),
+                  cursorColor: Colors.black,
+                  decoration: InputDecoration(
+                    hintText: 'Land Area (in acres)',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: const BorderSide(color: Colors.grey),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: const BorderSide(color: Colors.grey),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                    ),
                   ),
                   keyboardType: TextInputType.number,
                   onChanged: (value) => _updateSampleRequirement(),
                 ),
 
+
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  decoration: _inputDecoration('Select District', Icons.location_city),
+                  decoration: _inputDecoration('Select District'),
                   value: selectedDistrict,
-                  items: districts.map((district) {
+                    dropdownColor: AppColors.white,
+                    iconEnabledColor: AppColors.black,
+                    style: const TextStyle(color: Colors.black, fontSize: 16),
+                      items: districts.map((district) {
                     return DropdownMenuItem<String>(
                       value: district,
                       child: Text(district),
@@ -134,8 +151,11 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
                 if (selectedDistrict != null) ...[
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    decoration: _inputDecoration('Select Observatory', Icons.location_on),
+                    decoration: _inputDecoration('Select Observatory'),
                     value: selectedObservatory,
+                      dropdownColor: AppColors.white,
+                      iconEnabledColor: AppColors.black,
+                      style: const TextStyle(color: Colors.black, fontSize: 16),
                     items: observatories[selectedDistrict!]!.map((obs) {
                       return DropdownMenuItem<String>(
                         value: obs,
@@ -164,18 +184,35 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
                       'Number of Test Samples (Min: $minSamples)',
                       style: const TextStyle(fontSize: 16),
                     ),
-                    Slider(
-                      value: sampleCount.toDouble(),
-                      min: minSamples.toDouble(),
-                      max: 10,
-                      divisions: 10 - minSamples,
-                      label: sampleCount.toString(),
-                      onChanged: (value) {
-                        setState(() {
-                          sampleCount = value.toInt();
-                        });
-                      },
+                    const SizedBox(height: 20),
+
+                    SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        trackHeight: 15,
+                        activeTrackColor:AppColors.secondary,
+                        inactiveTrackColor: Colors.grey,
+                        thumbColor: AppColors.primary,
+                        valueIndicatorColor: AppColors.primary,
+                        valueIndicatorTextStyle: const TextStyle(
+                          color: AppColors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      child: Slider(
+                        value: sampleCount.toDouble(),
+                        min: minSamples.toDouble(),
+                        max: 10,
+                        divisions: 10 - minSamples,
+                        label: sampleCount.toString(),
+                        onChanged: (value) {
+                          setState(() {
+                            sampleCount = value.toInt();
+                          });
+                        },
+                      ),
                     ),
+
+
                   ],
                 ),
 
@@ -199,9 +236,20 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
                         );
                       }
                     },
-                    child: const Text('Proceed', style: TextStyle(fontSize: 18)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.black,
+                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                      textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 5,
+                    ),
+                    child: const Text('Next Step'),
                   ),
                 ),
+
               ],
             ),
           ),
@@ -210,11 +258,22 @@ class _TestInfoScreenState extends State<TestInfoScreen> {
     );
   }
 
-  InputDecoration _inputDecoration(String hint, IconData icon) {
+  InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
-      labelText: hint,
-      prefixIcon: Icon(icon),
-      border: const OutlineInputBorder(),
+      hintText: hint,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.black),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.grey),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.primary, width: 2),
+      ),
     );
   }
+
 }

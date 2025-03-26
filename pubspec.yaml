@@ -21,7 +21,6 @@ dependencies:
   cupertino_icons: ^1.0.8
   firebase_auth: ^5.4.1
   firebase_core: ^3.10.1
-  google_sign_in: ^6.2.2
   cloud_firestore: ^5.6.4
   provider: ^6.1.2
   shared_preferences: ^2.0.18
@@ -33,6 +32,11 @@ dependencies:
   excel: ^4.0.6
   fluttertoast: ^8.2.12
   dart_ping: ^9.0.1
+  curved_navigation_bar: ^1.0.6
+  weather_icons: ^3.0.0
+  google_sign_in: ^6.3.0
+
+
 
 dev_dependencies:
   flutter_test:

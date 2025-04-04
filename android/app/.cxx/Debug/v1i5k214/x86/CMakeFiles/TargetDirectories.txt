@@ -1,0 +1,2 @@
+C:/Users/91756/OneDrive/Desktop/newone/Seed/android/app/.cxx/Debug/v1i5k214/x86/CMakeFiles/edit_cache.dir
+C:/Users/91756/OneDrive/Desktop/newone/Seed/android/app/.cxx/Debug/v1i5k214/x86/CMakeFiles/rebuild_cache.dir

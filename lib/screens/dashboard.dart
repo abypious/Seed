@@ -10,6 +10,7 @@ import 'package:seed/screens/profile.dart';
 import '../components/loading.dart';
 import '../models/crop_prediction/TestInfoScreen.dart';
 import 'functions/ai_assistant_screen.dart';
+import 'functions/credits.dart';
 import 'functions/cropAtlas.dart';
 import 'functions/fertilizer.dart';
 import 'functions/irrigation_planner_screen.dart';
@@ -204,6 +205,12 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
         );
       }),
       _buildDrawerItem(Icons.logout, "Logout", null, onTap: _logout),
+      _buildDrawerItem(Icons.code_outlined, "Credits", null, onTap:(){
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const CreditsPage()),
+        );
+      }),
     ];
   }
 
@@ -236,7 +243,6 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
       },
     );
   }
-
 
   Widget _buildChatbotAssistant() {
     return Align(

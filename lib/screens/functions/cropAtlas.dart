@@ -4,10 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:path_drawing/path_drawing.dart';
 import 'package:xml/xml.dart';
 import 'package:http/http.dart' as http;
-import 'package:fluttertoast/fluttertoast.dart';
-import '../../components/colors.dart';
-import 'package:url_launcher/url_launcher.dart';
-
 
 
 class AtlasMap extends StatefulWidget {

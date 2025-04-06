@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:seed/components/colors.dart';
-import 'package:seed/screens/auth/signup.dart';
+import 'package:seed/screens/dashboard.dart';
 import 'auth/login.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -44,7 +44,7 @@ class HomeScreen extends StatelessWidget {
                     onPressed: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => LoginScreen()),
+                        MaterialPageRoute(builder: (context) =>LoginScreen()),
                       );
                     },
                     style: ElevatedButton.styleFrom(

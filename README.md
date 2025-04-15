@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="seed.png" />
+  <img src="seed.png"  height="300"width="300"/>
 </p>
 <h2 align="center"><b>SEED – IoT-Driven Smart Agriculture System</b></h2>
 
